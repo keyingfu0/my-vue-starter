@@ -1,5 +1,4 @@
-<script setup>
-import ButtonRepo from '@/components/ButtonRepo.vue'</script>
+<script setup></script>
 
 <template>
   <div class="bg-gray-50">
@@ -35,7 +34,6 @@ import ButtonRepo from '@/components/ButtonRepo.vue'</script>
             >Next Page</router-link
           >
         </div>
-        <ButtonRepo />
       </div>
     </div>
   </div>
