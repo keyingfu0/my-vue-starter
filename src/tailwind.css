@@ -3,3 +3,11 @@
 @import 'tailwindcss/components';
 
 @import 'tailwindcss/utilities';
+
+
+@layer components {
+  .btn-router-link {
+    @apply btn btn-outline;
+    @apply text-white text-lg px-8 bg-transparent border-transparent hover:border-white font-medium tracking-wide transition-colors duration-200 rounded-full !important;
+  }
+}
