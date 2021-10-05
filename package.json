@@ -1,0 +1,44 @@
+{
+  "name": "vite-vue3-tailwind-starter",
+  "version": "0.0.0",
+  "changelog": {
+    "language": "zh"
+  },
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "serve": "vite preview",
+    "f2elint-scan": "f2elint scan",
+    "f2elint-fix": "f2elint fix",
+    "release": "standard-version --preset zkc-config && git push --follow-tags github master"
+  },
+  "dependencies": {
+    "axios": "^0.21.4",
+    "dayjs": "^1.10.7",
+    "element-plus": "^1.1.0-beta.9",
+    "pinia": "^2.0.0-rc.8",
+    "ramda": "^0.27.1",
+    "vue": "^3.2.10",
+    "vue-request": "^1.2.0",
+    "vue-router": "^4.0.11"
+  },
+  "devDependencies": {
+    "@headlessui/vue": "^1.4.1",
+    "@heroicons/vue": "^1.0.4",
+    "@tailwindcss/aspect-ratio": "^0.2.1",
+    "@tailwindcss/forms": "^0.3.3",
+    "@tailwindcss/line-clamp": "^0.2.1",
+    "@tailwindcss/typography": "^0.4.1",
+    "@types/tailwindcss": "^2.2.1",
+    "@vitejs/plugin-vue": "^1.6.1",
+    "@vue/compiler-sfc": "^3.2.10",
+    "autoprefixer": "^10.3.4",
+    "conventional-changelog-cli": "^2.1.1",
+    "conventional-changelog-zkc-config": "^1.0.2",
+    "eslint-plugin-vue": "^7.17.0",
+    "f2elint": "^1.2.0",
+    "standard-version": "^9.3.1",
+    "tailwindcss": "^2.2.12",
+    "vite": "^2.5.5"
+  }
+}
