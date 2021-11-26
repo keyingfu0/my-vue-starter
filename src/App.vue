@@ -1,7 +1,7 @@
 <script setup>
 // noinspection ES6UnusedImports
-import { reactive } from 'vue'
-import { Button as AButton } from 'ant-design-vue'
+import { reactive, ref } from 'vue'
+// import { Button as AButton, Tabs as Atab, TabPane } from 'ant-design-vue'
 
 const tableData = reactive([
   { id: 10001, name: 'Test1', role: 'Develop', sex: 'Man', age: 28, address: 'test abc' },
@@ -20,10 +20,18 @@ const tableData = reactive([
 function handleClick() {
   tableData[0].name = '测试'
 }
+const activeKey = ref('1')
 </script>
 
 <template>
   <main class="px-6 py-4">
+    <div class="">
+      <a-tabs v-model:activeKey="activeKey">
+        <a-tab-pane key="1" tab="本周"></a-tab-pane>
+        <a-tab-pane key="2" tab="下周" force-render></a-tab-pane>
+        <a-tab-pane key="3" tab="下下周"></a-tab-pane>
+      </a-tabs>
+    </div>
     <div class="">
       <a-button type="primary" @click="handleClick">测试</a-button>
     </div>
