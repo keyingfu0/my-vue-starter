@@ -1,0 +1,156 @@
+name: 🚀 提交  release/** 或 master 分支后部署到相应服务器
+# 1
+on:
+  push:
+    branches:
+      - 'release/**'
+      - master
+
+jobs:
+  deploy-master:
+    name: 🎉 Deploy
+    runs-on: ubuntu-latest
+    # 默认为测试环境 2
+    env:
+      mode: test
+      server_ip: 47.98.59.211
+      server_port: 5243
+      build_script: 'build'
+      project_url: 'http://47.98.59.211:5285/'
+      server_dir: './IISSites-TY/CF.Mould.OpenApi/Android/'
+    steps:
+      - name: Get current time for start
+        uses: 1466587594/get-current-time@v2
+        id: current-time-start
+        with:
+          format: 'YYYY年MM月DD日 HH:mm:ss'
+          utcOffset: '+08:00'
+
+
+      #      - name: 测试环境获取版本号
+      #        id: jira
+      #        uses: AsasInnab/regex-action@v1
+      #        with:
+      #          regex_pattern: 'v.+'
+      #          search_string: '${{ github.}}'
+
+      #      如果是正式环境, 则修改变量
+      - name: 为正式环境设置环境变量
+        if: ${{ startsWith(github.ref, 'refs/heads/master') }}
+        run: |
+          echo "mode=production" >> $GITHUB_ENV
+          echo "server_ip=47.98.150.98" >> $GITHUB_ENV
+          echo "server_port=5262" >> $GITHUB_ENV
+          echo "build_script=build" >> $GITHUB_ENV
+          echo "project_url=http://47.98.59.211:5241/" >> $GITHUB_ENV
+          echo "server_dir=./CF.WDPractice.Gateway.Page.Vue/" >> $GITHUB_ENV
+
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # 默认情况下不会有tag, 为了获取tag需要指定深度为0 获取所有的, 不能用数值
+
+      #     获取标签, 即版本号
+      #  TODO 测试环境应该获取release后面的数字...
+      - name: 'Get Previous tag'
+        id: previoustag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        with:
+          fallback: 1.0.0
+
+      - name: 开始时通知飞书
+        uses: distributhor/workflow-webhook@v2
+        with:
+          verify_ssl: false
+        env:
+          webhook_url: https://www.feishu.cn/flow/api/trigger-webhook/13252e23a8613c2f41933e1413024dd3
+          webhook_secret: 'zkc'
+          data: '{ "status": "start", "tag": "${{ steps.previoustag.outputs.tag }}", "time":"${{ steps.current-time-start.outputs.formattedTime }}",  "github": ${{ toJSON(github) }},"url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'
+
+
+      - name: Use Node.js 12
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: '12'
+
+      #      获取分支名
+      #      - uses: nelonoel/branch-name@v1.0.1
+      #      - run: echo ${BRANCH_NAME}
+
+
+
+      #      - name: Get Changelog Entry
+      #        id: changelog_reader
+      #        uses: ./.github/workflows/read-changelog
+      #        with:
+      #          version: 2.2.0
+
+      - name: 🔨 Build Project
+        run: |
+          npm install
+          npm run ${{ env.build_script }}
+
+      - name: 📂 Sync files
+        uses: SamKirkland/FTP-Deploy-Action@4.1.0
+        with:
+          server: ${{ env.server_ip }}
+          username: cfwlftp
+          #          NOTE 注意github上要填password!!
+          password: ${{ secrets.password }}
+          local-dir: ./dist/
+          server-dir: ${{ env.server_dir }}
+          port: ${{ env.server_port }}
+          #          dry-run: true
+          exclude: '
+            - **/.web.config
+            '
+
+      # NOTE 需要创建tag !! 小写v开头, 不能大写, 不合法的semver
+      #      - name: 创建更改日志(正式环境)
+      #        id: github_release
+      #        uses: heinrichreimer/github-changelog-generator-action@v2.1.1
+      #        with:
+      #          token: ${{ secrets.GITHUB_TOKEN }}
+
+
+
+      - name: Get current time
+        uses: 1466587594/get-current-time@v2
+        id: current-time
+        with:
+          format: 'YYYY年MM月DD日 HH:mm:ss'
+          utcOffset: '+08:00'
+      #
+      #      NOTE 暂时不做了, 以后有空自己写个action计算所用时间
+      #      - name: 计算所用时间
+      #        shell: bash
+      #        run: |
+      #          echo `expr  $FIRST_NAME -  $FIRST_NAME` >> $GITHUB_ENV
+      - name: 生成更新日志连接
+        uses: bluwy/substitute-string-action@v1
+        id: changelog_url
+        with:
+          _input-text: 'https://github.com/kyingfu0/wenzhou-university-practice-base/blob/%%sha%%/CHANGELOG.md'
+          _format-key: '%%sha%%'
+          sha: ${{ github.sha }}
+
+
+      - name: 成功后通知飞书
+        if: ${{ success() }}
+        uses: distributhor/workflow-webhook@v2
+        with:
+          verify_ssl: false
+        env:
+          webhook_url: https://www.feishu.cn/flow/api/trigger-webhook/13252e23a8613c2f41933e1413024dd3
+          webhook_secret: 'zkc'
+          data: '{ "status": "success", "tag": "${{ steps.previoustag.outputs.tag }}", "project_url": "${{env.project_url}}", "time":"${{ steps.current-time.outputs.formattedTime }}", "github": ${{ toJSON(github) }},"url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}", "changelog_url": "${{ steps.changelog_url.outputs.result }}"}'
+
+      - name: 失败后通知飞书
+        if: ${{ failure() }}
+        uses: distributhor/workflow-webhook@v2
+        with:
+          verify_ssl: false
+        env:
+          webhook_url: https://www.feishu.cn/flow/api/trigger-webhook/13252e23a8613c2f41933e1413024dd3
+          webhook_secret: 'zkc'
+          data: '{ "status": "fail", "tag": "${{ steps.previoustag.outputs.tag }}", "project_url": "${{env.project_url}}", "time":"${{ steps.current-time.outputs.formattedTime }}", "github": ${{ toJSON(github) }},"url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",  "changelog_url": "${{ steps.changelog_url.outputs.result }}"}'
