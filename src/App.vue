@@ -1,8 +1,7 @@
 <script setup>
 // noinspection ES6UnusedImports
-import { ElConfigProvider } from 'element-plus'
-import zhCn from 'element-plus/lib/locale/lang/zh-cn'
-import { reactive, ref } from 'vue'
+import { reactive } from 'vue'
+import { Button as AButton } from 'ant-design-vue'
 
 const tableData = reactive([
   { id: 10001, name: 'Test1', role: 'Develop', sex: 'Man', age: 28, address: 'test abc' },
@@ -20,18 +19,19 @@ const tableData = reactive([
 </script>
 
 <template>
-  <el-config-provider :locale="zhCn">
-    <main>
-      <vxe-table :data="tableData" stripe highlight-hover-row>
-        <vxe-column type="seq" width="60"></vxe-column>
-        <vxe-column show-overflow="tooltip" field="name" title="Name">
-          <template #default="{ row }">
-            <span>自定义插槽模板 {{ row.name }}</span>
-          </template>
-        </vxe-column>
-        <vxe-column show-overflow="tooltip" field="sex" title="Sex"></vxe-column>
-        <vxe-column show-overflow="tooltip" field="age" title="Age"></vxe-column>
-      </vxe-table>
-    </main>
-  </el-config-provider>
+  <main class="px-6 py-4">
+    <div class="">
+      <a-button type="primary">测试</a-button>
+    </div>
+    <vxe-table :data="tableData" stripe highlight-hover-row>
+      <vxe-column type="seq" width="60"></vxe-column>
+      <vxe-column show-overflow="tooltip" field="name" title="Name">
+        <template #default="{ row }">
+          <span>自定义插槽模板 {{ row.name }}</span>
+        </template>
+      </vxe-column>
+      <vxe-column show-overflow="tooltip" field="sex" title="Sex"></vxe-column>
+      <vxe-column show-overflow="tooltip" field="age" title="Age"></vxe-column>
+    </vxe-table>
+  </main>
 </template>
