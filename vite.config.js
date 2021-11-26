@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import ElementPlus from 'unplugin-element-plus/vite'
+// import ElementPlus from 'unplugin-element-plus/vite'
 import { resolve } from 'path'
 import styleImport from 'vite-plugin-style-import'
 import babel from '@rollup/plugin-babel'
@@ -8,7 +8,7 @@ import babel from '@rollup/plugin-babel'
 export default defineConfig({
   plugins: [
     vue(),
-    ElementPlus(),
+    // ElementPlus(),
     styleImport({
       libs: [
         {
