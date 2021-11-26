@@ -16,12 +16,16 @@ const tableData = reactive([
     address: 'Shanghai',
   },
 ])
+
+function handleClick() {
+  tableData[0].name = '测试'
+}
 </script>
 
 <template>
   <main class="px-6 py-4">
     <div class="">
-      <a-button type="primary">测试</a-button>
+      <a-button type="primary" @click="handleClick">测试</a-button>
     </div>
     <vxe-table :data="tableData" stripe highlight-hover-row>
       <vxe-column type="seq" width="60"></vxe-column>

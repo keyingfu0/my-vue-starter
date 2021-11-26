@@ -49,6 +49,7 @@
     "eslint-plugin-vue": "^7.17.0",
     "f2elint": "^1.2.0",
     "install": "^0.13.0",
+    "less": "^4.1.2",
     "standard-version": "^9.3.1",
     "tailwindcss": "^2.2.12",
     "vite": "^2.5.5",

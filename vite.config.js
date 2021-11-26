@@ -2,23 +2,20 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 // import ElementPlus from 'unplugin-element-plus/vite'
 import { resolve } from 'path'
-import styleImport from 'vite-plugin-style-import'
+// import styleImport, { AndDesignVueResolve } from 'vite-plugin-style-import'
 import babel from '@rollup/plugin-babel'
 
 export default defineConfig({
+  css: {
+    preprocessorOptions: {
+      less: {
+        javascriptEnabled: true,
+      },
+      scss: { charset: false },
+    },
+  },
   plugins: [
     vue(),
-    // ElementPlus(),
-    styleImport({
-      libs: [
-        {
-          libraryName: 'vxe-table',
-          esModule: true,
-          resolveComponent: (name) => `vxe-table/es/${name}`,
-          resolveStyle: (name) => `vxe-table/es/${name}/style.css`,
-        },
-      ],
-    }),
     babel({
       babelHelpers: 'runtime',
       presets: [
@@ -36,15 +33,25 @@ export default defineConfig({
         [
           'import',
           {
+            libraryName: 'vxe-table',
+            style: true, // 样式是否也按需加载
+          },
+          'vxe',
+        ],
+        [
+          'import',
+          {
             libraryName: 'ant-design-vue',
             libraryDirectory: 'es',
             style: 'css',
           },
+          'antv',
         ],
         '@babel/plugin-proposal-optional-chaining',
         // '@babel/plugin-proposal-nullish-coalescing-operator',
       ],
     }),
+    // ElementPlus(),
   ],
   resolve: {
     alias: {
