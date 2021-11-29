@@ -30,7 +30,7 @@ import {
   // Form,
   // FormItem,
   // FormGather,
-  // Checkbox,
+  Checkbox,
   // CheckboxGroup,
   // Radio,
   // RadioGroup,
@@ -79,7 +79,7 @@ function useTable(app) {
     // .use(Form)
     // .use(FormItem)
     // .use(FormGather)
-    // .use(Checkbox)
+    .use(Checkbox)
     // .use(CheckboxGroup)
     // .use(Radio)
     // .use(RadioGroup)
