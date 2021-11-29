@@ -1,7 +1,10 @@
 <script setup>
 // noinspection ES6UnusedImports
 import { reactive, ref } from 'vue'
+import { saveAs } from 'file-saver'
 // import { Button as AButton, Tabs as Atab, TabPane } from 'ant-design-vue'
+import { InboxOutlined } from '@ant-design/icons-vue'
+import ImportExcel from '@/components/ImportExcel.vue'
 
 const tableData = reactive([
   {
@@ -91,10 +94,19 @@ const steps = [
   {
     title: '下载模板',
     content: {
-      template: `<div class="mt-4 text-lg flex justify-center">
-       <a>点击下载excel模板</a>
+      template: `<div class="mt-4 text-lg flex justify-center" >
+<!--       <span @click="handleDownload">点击下载excel模板</span>-->
+       <a @click="handleDownload" href="http://47.98.59.211:6247/Content/template/ProductionOrderTemplate.xls" download>点击下载excel模板</a>
       </div>`,
       setup() {
+        function handleDownload() {
+          console.log('download')
+          current.value = current.value + 1
+          // saveAs('http://47.98.59.211:6247/Content/template/ProductionOrderTemplate.xls', '订单模板.xls')
+        }
+        return {
+          handleDownload,
+        }
         // return
       },
     },
@@ -102,6 +114,7 @@ const steps = [
   {
     title: '导入excel',
     // content: '从excel文件中导入数据',
+    content: ImportExcel,
   },
   {
     title: '预览并确认',
