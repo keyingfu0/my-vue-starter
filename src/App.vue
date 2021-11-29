@@ -78,6 +78,38 @@ function showModal() {
   visible.value = true
 }
 //#endregion
+
+//#region ## excel导入 ==================================================
+const current = ref(0)
+const next = () => {
+  current.value++
+}
+const prev = () => {
+  current.value--
+}
+const steps = [
+  {
+    title: '下载模板',
+    content: {
+      template: `<div class="mt-4 text-lg flex justify-center">
+       <a>点击下载excel模板</a>
+      </div>`,
+      setup() {
+        // return
+      },
+    },
+  },
+  {
+    title: '导入excel',
+    // content: '从excel文件中导入数据',
+  },
+  {
+    title: '预览并确认',
+    // content: '预览导入数据并确认导入',
+  },
+]
+
+//#endregion
 </script>
 
 <template>
@@ -170,5 +202,22 @@ function showModal() {
   </main>
 
   <!--  对话框 -->
-  <a-modal v-model:visible="visible" title="Excel导入"> 内容... </a-modal>
+  <a-modal v-model:visible="visible" title="Excel导入" width="auto" class="flex justify-center">
+    <div class="min-w-[800px]">
+      <a-steps :current="current">
+        <a-step v-for="item in steps" :key="item.title" :title="item.title" />
+      </a-steps>
+      <div class="steps-content" v-if="steps[current].content">
+        <component :is="steps[current].content"></component>
+        <!--        {{ steps[current].content }}-->
+      </div>
+    </div>
+    <template #footer>
+      <div class="steps-action">
+        <a-button v-if="current > 0" style="margin-left: 8px" @click="prev">上一步</a-button>
+        <a-button v-if="current < steps.length - 1" type="primary" @click="next">下一步</a-button>
+        <a-button v-if="current == steps.length - 1" type="primary" @click="$message.success('Processing complete!')"> 完成 </a-button>
+      </div>
+    </template>
+  </a-modal>
 </template>

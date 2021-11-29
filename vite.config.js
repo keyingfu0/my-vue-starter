@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 // import ElementPlus from 'unplugin-element-plus/vite'
 import { resolve } from 'path'
-// import styleImport from 'vite-plugin-style-import'
+import styleImport from 'vite-plugin-style-import'
 import babel from '@rollup/plugin-babel'
 import Components from 'unplugin-vue-components/vite'
 import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
@@ -36,14 +36,14 @@ export default defineConfig({
       exclude: 'node_modules/**',
       plugins: [
         '@babel/plugin-transform-runtime',
-        [
-          'import',
-          {
-            libraryName: 'vxe-table',
-            style: true, // 样式是否也按需加载
-          },
-          'vxe',
-        ],
+        // [
+        //   'import',
+        //   {
+        //     libraryName: 'vxe-table',
+        //     style: true, // 样式是否也按需加载
+        //   },
+        //   'vxe',
+        // ],
         // [
         //   'import',
         //   {
@@ -57,16 +57,16 @@ export default defineConfig({
         // '@babel/plugin-proposal-nullish-coalescing-operator',
       ],
     }),
-    // styleImport({
-    //   libs: [
-    //     {
-    //       libraryName: 'vxe-table',
-    //       esModule: true,
-    //       resolveComponent: (name) => `vxe-table/es/${name}`,
-    //       resolveStyle: (name) => `vxe-table/es/${name}/style.css`,
-    //     },
-    //   ],
-    // }),
+    styleImport({
+      libs: [
+        {
+          libraryName: 'vxe-table',
+          esModule: true,
+          resolveComponent: (name) => `vxe-table/es/${name}`,
+          resolveStyle: (name) => `vxe-table/es/${name}/style.css`,
+        },
+      ],
+    }),
     // ElementPlus(),
   ],
   resolve: {
