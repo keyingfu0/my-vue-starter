@@ -6,42 +6,7 @@ defineProps({
   },
   columnSchema: {
     type: Array,
-    default: () => {
-      return [
-        {
-          field: 'cWeekNo',
-          title: '周次编码',
-        },
-        {
-          field: 'cProductNo',
-          title: '零部件名字',
-        },
-        {
-          field: 'cProductName',
-          title: '毛需求',
-        },
-        {
-          field: 'fGrossCount',
-          title: '期初结余',
-        },
-        {
-          field: 'fBalanceCount',
-          title: '本周在制量',
-        },
-        {
-          field: 'fProduceCount',
-          title: 'ATP',
-        },
-        {
-          field: 'fATPCount',
-          title: '关联工单',
-        },
-        {
-          field: 'cRelateNo',
-          title: '版本',
-        },
-      ]
-    },
+    default: () => [],
   },
   hasCheckbox: {
     type: Boolean,

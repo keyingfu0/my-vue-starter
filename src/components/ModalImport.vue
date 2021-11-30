@@ -129,6 +129,7 @@ const steps = [
               {
                 field: '组装开始时间',
                 title: '组装开始时间',
+                formatter: ['formatDate', 'yyyy/MM/dd'],
               },
             ],
           },

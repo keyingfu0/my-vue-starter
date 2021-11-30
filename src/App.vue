@@ -72,7 +72,7 @@ function selectAllChangeEvent() {}
 
 function selectChangeEvent() {}
 
-const activeKey = ref('1')
+const activeKey = ref('0')
 
 //#region ## 导入数据 ==================================================
 
@@ -87,6 +87,46 @@ async function finishImport() {
   visible.value = false
   // NOTE 通过改变key的方式强制重启组件,使用组件的初始状态
   modalKey.value++
+}
+
+//#endregion
+
+//#region ## 物料需求表 ==================================================
+const materialTable = {
+  columnSchema: [
+    {
+      field: 'cWeekNo',
+      title: '周次编码',
+    },
+    {
+      field: 'cProductNo',
+      title: '零部件名字',
+    },
+    {
+      field: 'cProductName',
+      title: '毛需求',
+    },
+    {
+      field: 'fGrossCount',
+      title: '期初结余',
+    },
+    {
+      field: 'fBalanceCount',
+      title: '本周在制量',
+    },
+    {
+      field: 'fProduceCount',
+      title: 'ATP',
+    },
+    {
+      field: 'fATPCount',
+      title: '关联工单',
+    },
+    {
+      field: 'cRelateNo',
+      title: '版本',
+    },
+  ],
 }
 
 //#endregion
@@ -114,6 +154,7 @@ async function finishImport() {
       class="mt-4"
       :checkbox-config="{ checkField: 'checked', trigger: 'row' }"
       :data="tableData"
+      :edit-config="{ trigger: 'click', mode: 'cell' }"
       highlight-hover-row
       row-id="cProductNo"
       stripe
@@ -138,7 +179,7 @@ async function finishImport() {
       ></vxe-column>
       <vxe-column field="cCustomerName" show-overflow="tooltip" title="客户名"></vxe-column>
       <vxe-column field="fCount" show-overflow="tooltip" title="数量"></vxe-column>
-      <vxe-column field="tProduceBeginDate" show-overflow="tooltip" title="组装开始时间"></vxe-column>
+      <vxe-column :formatter="['formatDate', 'yyyy/MM/dd']" field="tProduceBeginDate" show-overflow="tooltip" title="组装开始时间"></vxe-column>
       <vxe-column field="cRelateNo" show-overflow="tooltip" title="关联组装单"></vxe-column>
       <vxe-column field="fStatus" show-overflow="tooltip" title="是否结案"></vxe-column>
       <vxe-column show-overflow="tooltip" title="操作">操作</vxe-column>
@@ -154,7 +195,7 @@ async function finishImport() {
         <a-button type="primary" @click="handleClick">本期在制量</a-button>
         <a-button type="primary" @click="handleClick">工单下达</a-button>
       </div>
-      <BaseTable :data="tableData2" row-id="cProductNo" />
+      <BaseTable :data="tableData2" row-id="cProductNo" v-bind="materialTable" />
     </div>
   </main>
 

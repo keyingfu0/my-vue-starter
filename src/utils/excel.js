@@ -15,6 +15,7 @@ function readExcel(file, { setIsLoading, onLoad }) {
     const data = e.target.result
     const wb = XLSX.read(data, {
       type: 'binary',
+      cellDates: true,
     })
     wb.SheetNames.forEach((sheetName) => {
       result.push({
