@@ -96,7 +96,7 @@ const steps = [
     content: {
       template: `<div class="mt-4 text-lg flex justify-center" >
 <!--       <span @click="handleDownload">点击下载excel模板</span>-->
-       <a @click="handleDownload" href="http://47.98.59.211:6247/Content/template/ProductionOrderTemplate.xls" download>点击下载excel模板</a>
+       <a @click="handleDownload" href="http://47.98.59.211:6247/Content/template/ProductionOrderTemplate.xls" download="订单导入模板.xls">点击下载订单导入模板</a>
       </div>`,
       setup() {
         function handleDownload() {
@@ -112,7 +112,7 @@ const steps = [
     },
   },
   {
-    title: '导入excel',
+    title: '导入excel数据',
     // content: '从excel文件中导入数据',
     content: ImportExcel,
   },
