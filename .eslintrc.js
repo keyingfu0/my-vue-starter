@@ -3,4 +3,10 @@ module.exports = {
   rules: {
     'spaced-comment': 'off',
   },
+  globals: {
+    defineProps: 'readonly',
+    defineEmits: 'readonly',
+    defineExpose: 'readonly',
+    withDefaults: 'readonly',
+  },
 }

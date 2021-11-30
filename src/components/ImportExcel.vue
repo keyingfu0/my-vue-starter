@@ -1,17 +1,52 @@
 <script setup>
 import { InboxOutlined } from '@ant-design/icons-vue'
-import { ref } from 'vue'
+import { computed, ref, shallowRef, watch } from 'vue'
+import { readExcel } from '@/utils/excel.js'
+import { last } from 'lodash'
 
 const fileList = ref([])
+const excelJson = shallowRef([])
+const data = computed(() => {
+  return excelJson.value[0]?.sheet
+})
 
-function handleChange(file, files) {
-  console.log('-> handleChange files', files)
+//#region ## 跳转到下一页 ==================================================
+const props = defineProps({
+  isLoading: {
+    type: Boolean,
+    default: false,
+  },
+})
+
+const emit = defineEmits(['update:isLoading'])
+function setIsLoading(value) {
+  emit('update:isLoading', value)
+}
+//#endregion
+
+function handleChange({ file, fileList: newFileList } = {}) {
   console.log('-> handleChange file', file)
+  console.log('-> handleChange newFileList', newFileList)
+  if (!newFileList || newFileList.length === 0) {
+    return
+  }
+  if (newFileList.length > 1) {
+    fileList.value = [last(newFileList)]
+  }
+
+  //
+  // // this.$message.success(
+  // //   '导入模板数据中...导入完成后可进行下一步,请耐心等待'
+  // // )
+  //
+  // NOTE 并不是马上读取到数据, 是通过事件异步读取的
+  const { result } = readExcel(file, { setIsLoading })
+  excelJson.value = result
 }
 
 function beforeUpload(file, files) {
-  console.log('-> files', files)
-  console.log('-> file', file)
+  // console.log('-> files', files)
+  // console.log('-> file', file)
   return false
 }
 </script>
@@ -26,10 +61,15 @@ function beforeUpload(file, files) {
       action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
       @change="handleChange"
     >
-      <p class="ant-upload-drag-icon">
-        <inbox-outlined></inbox-outlined>
-      </p>
-      <p class="ant-upload-text px-4">点击或拖拽上传</p>
+      <template v-if="isLoading">
+        <a-spin tip="正在导入数据中...请稍后" />
+      </template>
+      <template v-else>
+        <p class="ant-upload-drag-icon">
+          <inbox-outlined></inbox-outlined>
+        </p>
+        <p class="ant-upload-text px-4">点击或拖拽上传</p>
+      </template>
     </a-upload-dragger>
   </div>
 </template>

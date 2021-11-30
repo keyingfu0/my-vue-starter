@@ -36,6 +36,15 @@ export default defineConfig({
       exclude: 'node_modules/**',
       plugins: [
         '@babel/plugin-transform-runtime',
+        [
+          'import',
+          {
+            libraryName: 'lodash',
+            libraryDirectory: '',
+            camel2DashComponentName: false,
+          },
+          'lodash',
+        ],
         // [
         //   'import',
         //   {
@@ -54,7 +63,7 @@ export default defineConfig({
         //   'antv',
         // ],
         '@babel/plugin-proposal-optional-chaining',
-        // '@babel/plugin-proposal-nullish-coalescing-operator',
+        '@babel/plugin-proposal-nullish-coalescing-operator',
       ],
     }),
     styleImport({

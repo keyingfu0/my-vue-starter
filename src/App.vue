@@ -1,6 +1,6 @@
 <script setup>
 // noinspection ES6UnusedImports
-import { reactive, ref } from 'vue'
+import { reactive, ref, h, watch } from 'vue'
 import { saveAs } from 'file-saver'
 // import { Button as AButton, Tabs as Atab, TabPane } from 'ant-design-vue'
 import { InboxOutlined } from '@ant-design/icons-vue'
@@ -84,24 +84,44 @@ function showModal() {
 
 //#region ## excel导入 ==================================================
 const current = ref(0)
+const nextButtonState = reactive({
+  1: {
+    disabled: true,
+    loading: false,
+  },
+})
+
 const next = () => {
   current.value++
 }
 const prev = () => {
   current.value--
 }
+
+// function setButtonDisabled(value) {
+//
+// }
+watch(
+  () => nextButtonState['1'].loading,
+  (newVal) => {
+    if (!newVal) {
+      nextButtonState['1'].disabled = false
+    }
+  },
+)
+
 const steps = [
   {
     title: '下载模板',
     content: {
       template: `<div class="mt-4 text-lg flex justify-center" >
 <!--       <span @click="handleDownload">点击下载excel模板</span>-->
-       <a @click="handleDownload" href="http://47.98.59.211:6247/Content/template/ProductionOrderTemplate.xls" download="订单导入模板.xls">点击下载订单导入模板</a>
+       <a @click="handleDownload" href="http://47.98.59.211:6247/Content/template/ApsSalesOrderImport.xlsx" download="订单导入模板.xls">点击下载订单导入模板</a>
       </div>`,
       setup() {
         function handleDownload() {
           console.log('download')
-          current.value = current.value + 1
+          next()
           // saveAs('http://47.98.59.211:6247/Content/template/ProductionOrderTemplate.xls', '订单模板.xls')
         }
         return {
@@ -114,7 +134,16 @@ const steps = [
   {
     title: '导入excel数据',
     // content: '从excel文件中导入数据',
-    content: ImportExcel,
+    content: {
+      template: `<ImportExcel :next="next" v-model:is-loading="nextButtonState['1'].loading"></ImportExcel>`,
+      components: { ImportExcel },
+      setup() {
+        return {
+          next,
+          nextButtonState,
+        }
+      },
+    },
   },
   {
     title: '预览并确认',
@@ -153,7 +182,6 @@ const steps = [
       @checkbox-all="selectAllChangeEvent"
       @checkbox-change="selectChangeEvent"
     >
-      >
       <vxe-column type="checkbox" width="60"></vxe-column>
       <vxe-column type="seq" width="60"></vxe-column>
       <!--      <vxe-column show-overflow="tooltip" field="name" title="Name">-->
@@ -220,15 +248,17 @@ const steps = [
       <a-steps :current="current">
         <a-step v-for="item in steps" :key="item.title" :title="item.title" />
       </a-steps>
-      <div class="steps-content" v-if="steps[current].content">
-        <component :is="steps[current].content"></component>
+      <div class="steps-content" v-show="steps[current].content">
+        <keep-alive>
+          <component :is="steps[current].content"></component>
+        </keep-alive>
         <!--        {{ steps[current].content }}-->
       </div>
     </div>
     <template #footer>
       <div class="steps-action">
         <a-button v-if="current > 0" style="margin-left: 8px" @click="prev">上一步</a-button>
-        <a-button v-if="current < steps.length - 1" type="primary" @click="next">下一步</a-button>
+        <a-button v-if="current < steps.length - 1" type="primary" @click="next" v-bind="nextButtonState[current]">下一步</a-button>
         <a-button v-if="current == steps.length - 1" type="primary" @click="$message.success('Processing complete!')"> 完成 </a-button>
       </div>
     </template>
