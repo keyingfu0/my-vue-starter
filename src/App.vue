@@ -1,18 +1,13 @@
 <script setup>
 // noinspection ES6UnusedImports
-import { reactive, ref, h, watch } from 'vue'
-import { saveAs } from 'file-saver'
+import { h, nextTick, reactive, ref, shallowRef, watch } from 'vue'
 // import { Button as AButton, Tabs as Atab, TabPane } from 'ant-design-vue'
 import ImportExcel from '@/components/ImportExcel.vue'
 
-/**
- * NOTE 不在template中使用的组件需要手动引入, `unplugin-vue-components` 无法识别
- * @see [ant-design-vue 的message和Modal没有样式 · Issue #162 · antfu/unplugin-vue-components](https://github.com/antfu/unplugin-vue-components/issues/162)
- */
-import message from 'ant-design-vue/lib/message/index.js'
-import 'ant-design-vue/lib/message/style/index.css'
+import BaseTable from '@/components/BaseTable.vue'
+import ModalImport from '@/components/ModalImport.vue'
 
-const tableData = reactive([
+const tableData = ref([
   {
     cProductNo: '001',
     cProductName: 'shifou ',
@@ -70,7 +65,7 @@ const tableData2 = reactive([
 ])
 
 function handleClick() {
-  tableData[0].name = '测试'
+  tableData.value[0].name = '测试'
 }
 
 function selectAllChangeEvent() {}
@@ -79,85 +74,20 @@ function selectChangeEvent() {}
 
 const activeKey = ref('1')
 
-//#region ## 按钮 ==================================================
+//#region ## 导入数据 ==================================================
 
 const visible = ref(false)
+const modalKey = ref(0)
 
 function showModal() {
   visible.value = true
 }
-//#endregion
 
-//#region ## excel导入 ==================================================
-const current = ref(0)
-const nextButtonState = reactive({
-  1: {
-    disabled: true,
-    loading: false,
-  },
-})
-
-const next = () => {
-  current.value++
+async function finishImport() {
+  visible.value = false
+  // NOTE 通过改变key的方式强制重启组件,使用组件的初始状态
+  modalKey.value++
 }
-const prev = () => {
-  current.value--
-}
-
-// function setButtonDisabled(value) {
-//
-// }
-watch(
-  () => nextButtonState['1'].loading,
-  (newVal) => {
-    if (!newVal) {
-      message.success('数据已导入!')
-      nextButtonState['1'].disabled = false
-      next()
-    }
-  },
-)
-
-const steps = [
-  {
-    title: '下载模板',
-    content: {
-      template: `<div class="mt-4 text-lg flex justify-center" >
-<!--       <span @click="handleDownload">点击下载excel模板</span>-->
-       <a @click="handleDownload" href="http://47.98.59.211:6247/Content/template/ApsSalesOrderImport.xlsx" download="订单导入.xlsx">点击下载订单导入模板</a>
-      </div>`,
-      setup() {
-        function handleDownload() {
-          console.log('download')
-          next()
-          // saveAs('http://47.98.59.211:6247/Content/template/ProductionOrderTemplate.xls', '订单模板.xls')
-        }
-        return {
-          handleDownload,
-        }
-        // return
-      },
-    },
-  },
-  {
-    title: '导入excel数据',
-    // content: '从excel文件中导入数据',
-    content: {
-      template: `<ImportExcel :next="next" v-model:is-loading="nextButtonState['1'].loading"></ImportExcel>`,
-      components: { ImportExcel },
-      setup() {
-        return {
-          next,
-          nextButtonState,
-        }
-      },
-    },
-  },
-  {
-    title: '预览并确认',
-    // content: '预览导入数据并确认导入',
-  },
-]
 
 //#endregion
 </script>
@@ -169,7 +99,7 @@ const steps = [
       <a-tabs v-model:activeKey="activeKey">
         <a-tab-pane key="0" tab="未排产"></a-tab-pane>
         <a-tab-pane key="1" tab="本周"></a-tab-pane>
-        <a-tab-pane key="2" tab="下周" force-render></a-tab-pane>
+        <a-tab-pane key="2" force-render tab="下周"></a-tab-pane>
         <a-tab-pane key="3" tab="下下周"></a-tab-pane>
       </a-tabs>
     </div>
@@ -177,16 +107,16 @@ const steps = [
     <div class="space-x-4">
       <a-button type="primary" @click="showModal">excel导入</a-button>
       <a-button type="primary" @click="handleClick">仓库齐套性检测</a-button>
-      <a-button type="primary" @click="handleClick">打印组装单 </a-button>
-      <a-button type="primary" @click="handleClick">ATP齐套性检测 </a-button>
+      <a-button type="primary" @click="handleClick">打印组装单</a-button>
+      <a-button type="primary" @click="handleClick">ATP齐套性检测</a-button>
     </div>
     <vxe-table
-      row-id="cProductNo"
-      :data="tableData"
-      stripe
-      highlight-hover-row
       class="mt-4"
       :checkbox-config="{ checkField: 'checked', trigger: 'row' }"
+      :data="tableData"
+      highlight-hover-row
+      row-id="cProductNo"
+      stripe
       @checkbox-all="selectAllChangeEvent"
       @checkbox-change="selectChangeEvent"
     >
@@ -199,18 +129,18 @@ const steps = [
       <!--        </template>-->
       <!--      </vxe-column>-->
 
-      <vxe-column show-overflow="tooltip" field="cProductNo" title="物料编码"></vxe-column>
+      <vxe-column field="cProductNo" show-overflow="tooltip" title="物料编码"></vxe-column>
       <vxe-column
-        show-overflow="tooltip"
         field="cProductName"
+        show-overflow="tooltip"
         title="成品名字
 "
       ></vxe-column>
-      <vxe-column show-overflow="tooltip" field="cCustomerName" title="客户名"></vxe-column>
-      <vxe-column show-overflow="tooltip" field="fCount" title="数量"></vxe-column>
-      <vxe-column show-overflow="tooltip" field="tProduceBeginDate" title="组装开始时间"></vxe-column>
-      <vxe-column show-overflow="tooltip" field="cRelateNo" title="关联组装单"></vxe-column>
-      <vxe-column show-overflow="tooltip" field="fStatus" title="是否结案"></vxe-column>
+      <vxe-column field="cCustomerName" show-overflow="tooltip" title="客户名"></vxe-column>
+      <vxe-column field="fCount" show-overflow="tooltip" title="数量"></vxe-column>
+      <vxe-column field="tProduceBeginDate" show-overflow="tooltip" title="组装开始时间"></vxe-column>
+      <vxe-column field="cRelateNo" show-overflow="tooltip" title="关联组装单"></vxe-column>
+      <vxe-column field="fStatus" show-overflow="tooltip" title="是否结案"></vxe-column>
       <vxe-column show-overflow="tooltip" title="操作">操作</vxe-column>
     </vxe-table>
 
@@ -221,54 +151,13 @@ const steps = [
       <div class="space-x-4">
         <a-button type="primary" @click="handleClick">毛需求计算</a-button>
         <a-button type="primary" @click="handleClick">获取期初结余</a-button>
-        <a-button type="primary" @click="handleClick">本期在制量 </a-button>
-        <a-button type="primary" @click="handleClick">工单下达 </a-button>
+        <a-button type="primary" @click="handleClick">本期在制量</a-button>
+        <a-button type="primary" @click="handleClick">工单下达</a-button>
       </div>
-      <vxe-table row-id="cProductNo" :data="tableData2" stripe highlight-hover-row class="mt-4" :checkbox-config="{ checkField: 'checked', trigger: 'row' }">
-        <vxe-column type="checkbox" width="60"></vxe-column>
-        <vxe-column type="seq" width="60"></vxe-column>
-        <!--      <vxe-column show-overflow="tooltip" field="name" title="Name">-->
-        <!--        <template #default="{ row }">-->
-        <!--          <span>自定义插槽模板 {{ row.name }}</span>-->
-
-        <!--        </template>-->
-        <!--      </vxe-column>-->
-        <vxe-column show-overflow="tooltip" field="cWeekNo" title="周次编码"></vxe-column>
-        <vxe-column
-          show-overflow="tooltip"
-          field="cProductNo"
-          title="零部件名字
-"
-        ></vxe-column>
-        <vxe-column show-overflow="tooltip" field="cProductName" title="毛需求"></vxe-column>
-        <vxe-column show-overflow="tooltip" field="fGrossCount" title="期初结余"></vxe-column>
-        <vxe-column show-overflow="tooltip" field="fBalanceCount" title="本周在制量"></vxe-column>
-        <vxe-column show-overflow="tooltip" field="fProduceCount" title="ATP"></vxe-column>
-        <vxe-column show-overflow="tooltip" field="fATPCount" title="关联工单"></vxe-column>
-        <vxe-column show-overflow="tooltip" field="cRelateNo" title="版本"></vxe-column>
-      </vxe-table>
+      <BaseTable :data="tableData2" row-id="cProductNo" />
     </div>
   </main>
 
   <!--  对话框 -->
-  <a-modal v-model:visible="visible" title="Excel导入" width="auto" class="flex justify-center">
-    <div class="min-w-[800px]">
-      <a-steps :current="current">
-        <a-step v-for="item in steps" :key="item.title" :title="item.title" />
-      </a-steps>
-      <div class="steps-content" v-show="steps[current].content">
-        <keep-alive>
-          <component :is="steps[current].content"></component>
-        </keep-alive>
-        <!--        {{ steps[current].content }}-->
-      </div>
-    </div>
-    <template #footer>
-      <div class="steps-action">
-        <a-button v-if="current > 0" style="margin-left: 8px" @click="prev">上一步</a-button>
-        <a-button v-if="current < steps.length - 1" type="primary" @click="next" v-bind="nextButtonState[current]">下一步</a-button>
-        <a-button v-if="current == steps.length - 1" type="primary"> 完成 </a-button>
-      </div>
-    </template>
-  </a-modal>
+  <ModalImport :key="modalKey" v-model:visible="visible" @finish="finishImport"></ModalImport>
 </template>

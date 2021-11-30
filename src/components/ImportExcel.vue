@@ -1,14 +1,10 @@
 <script setup>
 import { InboxOutlined } from '@ant-design/icons-vue'
-import { computed, ref, shallowRef, watch } from 'vue'
+import { computed, nextTick, ref, shallowRef, watch } from 'vue'
 import { readExcel } from '@/utils/excel.js'
 import { last } from 'lodash'
 
 const fileList = ref([])
-const excelJson = shallowRef([])
-const data = computed(() => {
-  return excelJson.value[0]?.sheet
-})
 
 //#region ## 跳转到下一页 ==================================================
 const props = defineProps({
@@ -16,9 +12,13 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  data: {
+    type: Array,
+    default: () => [],
+  },
 })
 
-const emit = defineEmits(['update:isLoading'])
+const emit = defineEmits(['update:isLoading', 'update:data'])
 function setIsLoading(value) {
   emit('update:isLoading', value)
 }
@@ -40,8 +40,15 @@ function handleChange({ file, fileList: newFileList } = {}) {
   // // )
   //
   // NOTE 并不是马上读取到数据, 是通过事件异步读取的
-  const { result } = readExcel(file, { setIsLoading })
-  excelJson.value = result
+  readExcel(file, {
+    setIsLoading,
+    async onLoad(res) {
+      console.log('-> res', res[0].sheet)
+      emit('update:data', res[0]?.sheet ?? [])
+      await nextTick()
+      console.log('dataaaaaa', props.data)
+    },
+  })
 }
 
 function beforeUpload(file, files) {

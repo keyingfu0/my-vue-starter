@@ -6,6 +6,8 @@ import styleImport from 'vite-plugin-style-import'
 import babel from '@rollup/plugin-babel'
 import Components from 'unplugin-vue-components/vite'
 import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
+import nodeResolve from '@rollup/plugin-node-resolve'
+import commonjs from '@rollup/plugin-commonjs'
 
 export default defineConfig({
   css: {
@@ -24,15 +26,15 @@ export default defineConfig({
     }),
     babel({
       babelHelpers: 'runtime',
-      presets: [
-        [
-          '@babel/preset-env',
-          {
-            modules: false,
-          },
-        ],
-      ],
-      extensions: ['.ts', '.tsx', '.js', '.vue'],
+      // presets: [
+      //   [
+      //     '@babel/preset-env',
+      //     {
+      //       modules: false,
+      //     },
+      //   ],
+      // ],
+      extensions: ['.ts', '.tsx', '.js'],
       exclude: 'node_modules/**',
       plugins: [
         '@babel/plugin-transform-runtime',
@@ -75,6 +77,12 @@ export default defineConfig({
           resolveStyle: (name) => `vxe-table/es/${name}/style.css`,
         },
       ],
+    }),
+    nodeResolve({
+      mainFields: ['jsnext:main'],
+    }),
+    commonjs({
+      include: 'node_modules/**',
     }),
     // ElementPlus(),
   ],
