@@ -3,8 +3,14 @@
 import { reactive, ref, h, watch } from 'vue'
 import { saveAs } from 'file-saver'
 // import { Button as AButton, Tabs as Atab, TabPane } from 'ant-design-vue'
-import { InboxOutlined } from '@ant-design/icons-vue'
 import ImportExcel from '@/components/ImportExcel.vue'
+
+/**
+ * NOTE 不在template中使用的组件需要手动引入, `unplugin-vue-components` 无法识别
+ * @see [ant-design-vue 的message和Modal没有样式 · Issue #162 · antfu/unplugin-vue-components](https://github.com/antfu/unplugin-vue-components/issues/162)
+ */
+import message from 'ant-design-vue/lib/message/index.js'
+import 'ant-design-vue/lib/message/style/index.css'
 
 const tableData = reactive([
   {
@@ -105,7 +111,9 @@ watch(
   () => nextButtonState['1'].loading,
   (newVal) => {
     if (!newVal) {
+      message.success('数据已导入!')
       nextButtonState['1'].disabled = false
+      next()
     }
   },
 )
@@ -116,7 +124,7 @@ const steps = [
     content: {
       template: `<div class="mt-4 text-lg flex justify-center" >
 <!--       <span @click="handleDownload">点击下载excel模板</span>-->
-       <a @click="handleDownload" href="http://47.98.59.211:6247/Content/template/ApsSalesOrderImport.xlsx" download="订单导入模板.xls">点击下载订单导入模板</a>
+       <a @click="handleDownload" href="http://47.98.59.211:6247/Content/template/ApsSalesOrderImport.xlsx" download="订单导入.xlsx">点击下载订单导入模板</a>
       </div>`,
       setup() {
         function handleDownload() {
@@ -259,7 +267,7 @@ const steps = [
       <div class="steps-action">
         <a-button v-if="current > 0" style="margin-left: 8px" @click="prev">上一步</a-button>
         <a-button v-if="current < steps.length - 1" type="primary" @click="next" v-bind="nextButtonState[current]">下一步</a-button>
-        <a-button v-if="current == steps.length - 1" type="primary" @click="$message.success('Processing complete!')"> 完成 </a-button>
+        <a-button v-if="current == steps.length - 1" type="primary"> 完成 </a-button>
       </div>
     </template>
   </a-modal>
