@@ -19,9 +19,11 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:isLoading', 'update:data'])
+
 function setIsLoading(value) {
   emit('update:isLoading', value)
 }
+
 //#endregion
 
 function handleChange({ file, fileList: newFileList } = {}) {
@@ -64,8 +66,8 @@ function beforeUpload(file, files) {
       v-model:fileList="fileList"
       :before-upload="beforeUpload"
       accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-      name="file"
       action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+      name="file"
       @change="handleChange"
     >
       <template v-if="isLoading">

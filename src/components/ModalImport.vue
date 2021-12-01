@@ -100,7 +100,7 @@ const steps = [
       template: `
         <div>
         <a-alert class="mt-4" message="返回上一步可重新导入" type="info" show-icon banner/>
-        <BaseTable :data="excelData" v-bind="tableConfig"></BaseTable>
+        <BaseTable max-height="600" :data="excelData" v-bind="tableConfig"></BaseTable>
         </div>`,
       components: { AAlert, BaseTable },
       setup() {
