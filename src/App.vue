@@ -6,6 +6,8 @@ import ImportExcel from '@/components/ImportExcel.vue'
 
 import BaseTable from '@/components/BaseTable.vue'
 import ModalImport from '@/components/ModalImport.vue'
+import message from 'ant-design-vue/lib/message'
+import 'ant-design-vue/lib/message/style/index.css'
 
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import dayjs from 'dayjs'
@@ -142,6 +144,7 @@ const hasEdit = ref(false)
 
 function handleCellChange(row, column) {
   hasEdit.value = true
+  row._hasEdit = true
 }
 
 function saveTable() {
@@ -155,9 +158,9 @@ function resetTable() {
 // 编辑后改变单元格样式
 const cellStyle = ({ row, column }) => {
   if (column.property === 'tProduceBeginDate') {
-    if (row.sex >= '1') {
+    if (row._hasEdit) {
       return {
-        backgroundColor: '#187',
+        backgroundColor: 'lightblue',
       }
     }
   }
@@ -181,6 +184,37 @@ nextTick(() => {
 })
 
 //#endregion
+
+//#region ## 订单表格单选 ==================================================
+// const selectRow = shallowRef()
+
+function getSelectedRows() {
+  const selectedRows = salesOrderTable.value.getCheckboxRecords()
+  console.log('-> selectedRows', selectedRows)
+  if (!selectedRows.length) {
+    message.warning('未选中数据!')
+    return null
+  }
+
+  return selectedRows
+}
+
+//#endregion
+
+//#region ## 仓库齐套性检测 ==================================================
+const visibleCheckModal = ref(false)
+
+function handleStoreUniformityCheck() {
+  // 是否选中行
+  const selectedRows = getSelectedRows()
+  if (!selectedRows) {
+    return
+  }
+
+  visibleCheckModal.value = true
+}
+
+//#endregion
 </script>
 
 <template>
@@ -202,9 +236,9 @@ nextTick(() => {
           <div class="flex justify-between mr-4">
             <div class="space-x-4">
               <a-button @click="showModal">excel导入</a-button>
-              <a-button @click="handleClick">仓库齐套性检测</a-button>
+              <a-button @click="handleStoreUniformityCheck">仓库齐套性检测</a-button>
               <a-button @click="handleClick">打印组装单</a-button>
-              <a-button @click="handleClick">ATP齐套性检测</a-button>
+              <a-button @click="handleStoreUniformityCheck">ATP齐套性检测</a-button>
             </div>
             <div class="space-x-4">
               <a-button v-show="hasEdit" type="primary" @click="saveTable">保存编辑</a-button>
@@ -214,12 +248,16 @@ nextTick(() => {
         </template>
       </vxe-toolbar>
       <vxe-table
+        id="salesOrderTable"
         ref="salesOrderTable"
         class="mt-4"
         :cell-style="cellStyle"
+        :column-config="{ resizable: true }"
+        :custom-config="{ storage: true }"
         :data="tableData"
         :edit-config="{ trigger: 'click', mode: 'cell' }"
         :print-config="{}"
+        :radio-config="{ highlight: true }"
         highlight-hover-row
         row-id="cProductNo"
         stripe
@@ -266,11 +304,17 @@ nextTick(() => {
           <a-button type="primary" @click="handleClick">本期在制量</a-button>
           <a-button type="primary" @click="handleClick">工单下达</a-button>
         </div>
-        <BaseTable :data="tableData2" row-id="cProductNo" v-bind="materialTable" />
+        <BaseTable id="materialTable" :data="tableData2" row-id="cProductNo" v-bind="materialTable" />
       </div>
     </main>
 
-    <!--  对话框 -->
+    <!--  导入对话框 -->
     <ModalImport :key="modalKey" v-model:visible="visible" @finish="finishImport"></ModalImport>
+    <!--    齐套性检测对话框 -->
+    <a-modal v-model:visible="visibleCheckModal" class="flex justify-center" :footer="null" title="仓库齐套性检测" width="auto">
+      <div class="min-w-[1200px]">
+        <BaseTable id="storeUniformityCheck" :data="tableData2" :has-checkbox="false" row-id="cProductNo" v-bind="materialTable" />
+      </div>
+    </a-modal>
   </a-config-provider>
 </template>

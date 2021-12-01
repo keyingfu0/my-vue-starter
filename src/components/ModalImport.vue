@@ -4,10 +4,10 @@ import { reactive, ref, shallowRef, watch } from 'vue'
  * NOTE 不在template中使用的组件需要手动引入, `unplugin-vue-components` 无法识别
  * @see [ant-design-vue 的message和Modal没有样式 · Issue #162 · antfu/unplugin-vue-components](https://github.com/antfu/unplugin-vue-components/issues/162)
  */
-import message from 'ant-design-vue/lib/message'
 import ImportExcel from '@/components/ImportExcel.vue'
 import AAlert from 'ant-design-vue/lib/alert'
 import BaseTable from '@/components/BaseTable.vue'
+import message from 'ant-design-vue/lib/message'
 import 'ant-design-vue/lib/message/style/index.css'
 import 'ant-design-vue/lib/alert/style/index.css'
 
