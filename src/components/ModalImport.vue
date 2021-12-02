@@ -6,10 +6,12 @@ import { reactive, ref, shallowRef, watch } from 'vue'
  */
 import ImportExcel from '@/components/ImportExcel.vue'
 import AAlert from 'ant-design-vue/lib/alert'
+import ASpin from 'ant-design-vue/lib/spin'
 import BaseTable from '@/components/BaseTable.vue'
 import message from 'ant-design-vue/lib/message'
 import 'ant-design-vue/lib/message/style/index.css'
 import 'ant-design-vue/lib/alert/style/index.css'
+import 'ant-design-vue/lib/spin/style/index.css'
 
 const props = defineProps({
   visible: {
@@ -110,12 +112,18 @@ const steps = [
       template: `
         <div>
         <a-alert class="mt-4" message="返回上一步可重新导入" type="info" show-icon banner/>
+        <template v-if="uploading">
+          <div class="flex mt-6 items-center justify-center">
+            <a-spin tip="正在上传中...请稍后"/>
+          </div>
+        </template>
         <BaseTable max-height="600" :data="excelData" v-bind="tableConfig"></BaseTable>
         </div>`,
-      components: { AAlert, BaseTable },
+      components: { AAlert, BaseTable, ASpin },
       setup() {
         return {
           excelData,
+          uploading,
           tableConfig: {
             hasCheckbox: false,
             customConfig: {},
