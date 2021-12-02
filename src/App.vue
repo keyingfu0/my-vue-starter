@@ -431,6 +431,7 @@ function handleVisibleChange(bool) {
               :visible="isWorkOrderReleaseConfirmVisible"
               cancel-text="取消"
               ok-text="确认"
+              placement="bottom"
               title="确认下达工单?"
               @visibleChange="handleVisibleChange"
             >
