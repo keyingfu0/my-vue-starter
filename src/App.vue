@@ -16,6 +16,7 @@ import 'dayjs/locale/zh-cn'
 import request from '@/utils/request'
 import useRequest, { useList } from '@/utils/useRequest'
 import { formatTime } from '@/utils/time'
+import { isArray, isObject } from 'lodash'
 
 dayjs.locale('zh-cn')
 
@@ -61,6 +62,9 @@ const salesOrderTable = {
       })
     },
   ],
+  deleteConfig: {
+    handler: _handleDelete,
+  },
 }
 
 //#endregion
@@ -250,6 +254,7 @@ function saveTable() {
 
 function resetTable() {
   hasEdit.value = false
+  salesOrderTableRef.value.refresh()
 }
 
 // 编辑后改变单元格样式
@@ -321,6 +326,20 @@ function handleVisibleChange(bool) {
 }
 
 //#endregion
+
+//#region ## 订单表删除 ==================================================
+async function _handleDelete(ids) {
+  await request('/ApsSalesOrderInfo/DeleteApsSalesOrderInfoIDS', {
+    method: 'POST',
+    data: ids,
+  })
+}
+
+async function handleDelete(row) {
+  salesOrderTableRef.value.handleDelete(row)
+}
+
+//#endregion
 </script>
 
 <template>
@@ -381,7 +400,11 @@ function handleVisibleChange(bool) {
           </vxe-column>
           <vxe-column field="cRelateNo" show-overflow="tooltip" title="关联组装单"></vxe-column>
           <vxe-column field="fStatus" show-overflow="tooltip" title="是否结案"></vxe-column>
-          <vxe-column show-overflow="tooltip" title="操作">删除</vxe-column>
+          <vxe-column v-slot="{ row }" show-overflow="tooltip" title="操作">
+            <a-popconfirm cancel-text="取消" ok-text="确认" title="确认删除?" @confirm="handleDelete(row)">
+              <a-button danger type="text"> 删除</a-button>
+            </a-popconfirm>
+          </vxe-column>
         </template>
       </BaseTable>
 
@@ -405,7 +428,6 @@ function handleVisibleChange(bool) {
               :visible="isWorkOrderReleaseConfirmVisible"
               cancel-text="取消"
               ok-text="确认"
-              placement="bottom"
               title="确认下达工单?"
               @visibleChange="handleVisibleChange"
             >

@@ -1,5 +1,5 @@
 <script setup>
-import { h, nextTick, reactive, ref, resolveComponent, watch } from 'vue'
+import { h, nextTick, reactive, ref, resolveComponent, shallowRef, watch } from 'vue'
 import message from 'ant-design-vue/lib/message'
 import 'ant-design-vue/lib/message/style/index.css'
 import useRequest, { useList } from '@/utils/useRequest'
@@ -34,6 +34,14 @@ const props = defineProps({
   //   type: Boolean,
   //   default: false,
   // },
+
+  /**
+   * 删除配置
+   */
+  deleteConfig: {
+    type: Object,
+    default: null,
+  },
 })
 
 //#region ## 表格工具栏 ==================================================
@@ -112,11 +120,38 @@ function getSelectedRows() {
   return selectedRows
 }
 
+//#endregion
+
+//#region ## 删除 ==================================================
+const selectedRows = shallowRef([])
+
+function handleCheckboxChange({ records }) {
+  selectedRows.value = records
+}
+
+async function handleDelete(row) {
+  const rows = row ? [row] : selectedRows.value
+  console.log('-> rows', rows)
+  const { handler } = props.deleteConfig
+  await handler(rows.map((item) => item.id))
+  message.success('删除成功!')
+  refreshTableData()
+}
+
+async function refreshTableData() {
+  await refresh()
+  //  ? 有bug, 奇怪的需要手动清除选择,不然无法取消选择状态
+  table.value.clearCheckboxRow()
+  selectedRows.value = []
+}
+
+//#endregion
+
 defineExpose({
   getSelectedRows,
-  refresh,
+  refresh: refreshTableData,
+  handleDelete,
 })
-//#endregion
 </script>
 
 <template>
@@ -126,10 +161,13 @@ defineExpose({
       <div class="flex justify-between mr-4">
         <div class="space-x-4">
           <slot name="buttons-left"></slot>
+          <a-popconfirm v-if="deleteConfig" cancel-text="取消" ok-text="确认" title="确认删除?" @confirm="handleDelete()">
+            <a-button v-show="selectedRows.length > 0" danger type="primary">删除</a-button>
+          </a-popconfirm>
         </div>
         <div class="space-x-4">
           <slot name="buttons-right"></slot>
-          <a-button shape="circle" @click="refresh">
+          <a-button shape="circle" @click="refreshTableData">
             <template #icon>
               <ReloadOutlined class="-translate-y-0.5" />
             </template>
@@ -143,6 +181,7 @@ defineExpose({
   <vxe-table
     ref="table"
     class="mt-4"
+    :checkbox-config="{ range: true, highlight: true }"
     :column-config="{ resizable: true }"
     :custom-config="{ storage: true }"
     :data="data"
@@ -151,6 +190,8 @@ defineExpose({
     highlight-hover-row
     row-id="id"
     v-bind="$attrs"
+    @checkbox-change="handleCheckboxChange"
+    @checkbox-all="handleCheckboxChange"
   >
     <vxe-column v-if="hasCheckbox" type="checkbox" width="60"></vxe-column>
     <vxe-column type="seq" width="60"></vxe-column>

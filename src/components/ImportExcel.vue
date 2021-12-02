@@ -77,6 +77,7 @@ async function upload() {
     formData.append('file', file.originFileObj)
   })
   emit('update:uploading', true)
+  console.log('uploading', props.uploading)
 
   return request(props.action, {
     method: 'post',
@@ -85,6 +86,7 @@ async function upload() {
     .then(() => {
       fileList.value = []
       emit('update:uploading', false)
+      console.log('uploading', props.uploading)
       message.success('上传成功!')
     })
     .catch(() => {

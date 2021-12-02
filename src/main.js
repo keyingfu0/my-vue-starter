@@ -24,7 +24,7 @@ import {
   Edit,
   Menu,
   Export,
-  // Keyboard,
+  Keyboard,
   Validator,
 
   // 可选组件
@@ -114,7 +114,7 @@ function useTable(app) {
     .use(Edit)
     .use(Menu)
     .use(Export)
-    // .use(Keyboard)
+    .use(Keyboard)
     .use(Validator)
 
     // 可选组件

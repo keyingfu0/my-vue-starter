@@ -26,7 +26,7 @@ const handleData = ({ config, data, status, statusText }) => {
   console.log('-> data', data)
   console.log('-> statusText', statusText)
 
-  const { Code, Message } = data
+  const { Code, Message = '未知错误' } = data
   if (status === 401) {
     message.info('请先登录')
     router.replace({

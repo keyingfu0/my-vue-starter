@@ -89,7 +89,7 @@ const steps = [
         <a-alert class="mt-4" message="请保持列名和模板一致,否则无法导入数据" type="info" show-icon banner/>
         <ImportExcel ref="importRef" v-model:data="excelData" :next="next"
                      action="/ApsSalesOrderInfo/SalesOrderInfoImport"
-                     :uploading="uploading"
+                     v-model:uploading="uploading"
                      v-model:is-loading="nextButtonState['1'].loading"></ImportExcel>`,
       components: { ImportExcel, AAlert },
       setup() {
