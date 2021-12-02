@@ -10,7 +10,7 @@ dayjs.extend(customParseFormat)
 dayjs.extend(relativeTime)
 dayjs.extend(duration)
 
-export function formatTime(dateStr, format) {
+export function formatTime(dateStr, format = 'YYYY-MM-DD') {
   // console.log('🚀 > file: index.js:752 > formatTimeDayjs > args:', args)
   // return dayjs(...args)
   if (isNil(dateStr)) return ''

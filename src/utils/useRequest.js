@@ -138,10 +138,12 @@ const presets = {
     })
   },
 
+  'loading-delay': {
+    loadingDelay: 500,
+  },
+
   'initial-empty-list': {
-    initialData: {
-      List: [],
-    },
+    initialData: [],
   },
 
   'set-default-pageSize': {
@@ -162,7 +164,7 @@ const presets = {
   // },
 
   // 复合定义
-  default: ['message-on-success', 'get-content'],
+  default: ['message-on-success', 'get-content', 'loading-delay'],
   'is-list': {
     isList: true,
     pagination: {

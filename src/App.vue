@@ -15,78 +15,13 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/zh-cn'
 import request from '@/utils/request'
 import useRequest, { useList } from '@/utils/useRequest'
+import { formatTime } from '@/utils/time'
 
 dayjs.locale('zh-cn')
 
-const tableData = ref([
-  {
-    cProductNo: '001',
-    cProductName: 'shifou ',
-    cCustomerName: '小王',
-    fCount: '1000',
-    tProduceBeginDate: '2021/11/16',
-    cRelateNo: '',
-    fStatus: 0,
-  },
-  {
-    cProductNo: '002',
-    cProductName: 'shifou ',
-    cCustomerName: '小王',
-    fCount: '1000',
-    tProduceBeginDate: '2021/11/16',
-    cRelateNo: '',
-    fStatus: 0,
-  },
-])
+// const tableData = ref()
 
-const tableData2 = reactive([
-  {
-    cWeekNo: '2021第21周(11.22~11.28)',
-    cProductNo: '001',
-    cProductName: '300',
-    fGrossCount: '200',
-    fBalanceCount: '100',
-    fProduceCount: '100',
-    fATPCount: '10',
-    OrderList: [
-      {
-        cProductionOrderNo: 'cs1201',
-        fIsReleaseOrder: 0,
-        label: 'cs1201',
-        value: 'cs1201',
-      },
-    ],
-    OrderListVal: ['cs1201', '20211101'],
-    cRelateNo: 'cs1201,20211101',
-    fVersion: '2',
-  },
-  {
-    cWeekNo: '2021第21周(11.22~11.28)',
-    cProductNo: '002',
-    cProductName: '300',
-    fGrossCount: '200',
-    fBalanceCount: '100',
-    fProduceCount: '100',
-    fATPCount: '10',
-    OrderList: [
-      {
-        cProductionOrderNo: 'cs1201',
-        fIsReleaseOrder: 0,
-        label: 'cs1201',
-        value: 'cs1201',
-      },
-      {
-        cProductionOrderNo: '20211101',
-        fIsReleaseOrder: 1,
-        label: '20211101',
-        value: '20211101',
-      },
-    ],
-    OrderListVal: ['cs1201', '20211101'],
-    cRelateNo: 'cs1201,20211101',
-    fVersion: '2',
-  },
-])
+// const tableData2 = reactive()
 
 function handleClick() {
   // tableData.value[0].name = '测试'
@@ -111,6 +46,18 @@ async function finishImport() {
   visible.value = false
   // NOTE 通过改变key的方式强制重启组件,使用组件的初始状态
   modalKey.value++
+}
+
+//#endregion
+
+//#region ## 订单表 ==================================================
+const salesOrderTable = {
+  requestConfig: [
+    () =>
+      request('/ApsSalesOrderInfo/GetApsSalesOrderInfoPageList', {
+        method: 'post',
+      }),
+  ],
 }
 
 //#endregion
@@ -227,10 +174,60 @@ const materialTable = {
     },
   ],
   requestConfig: [
-    () =>
-      request('/ApsSalesOrderInfo/GetApsSalesOrderInfoPageList', {
-        method: 'post',
-      }),
+    async () => {
+      return {
+        Content: {
+          List: [
+            {
+              cWeekNo: '2021第21周(11.22~11.28)',
+              cProductNo: '001',
+              cProductName: '300',
+              fGrossCount: '200',
+              fBalanceCount: '100',
+              fProduceCount: '100',
+              fATPCount: '10',
+              OrderList: [
+                {
+                  cProductionOrderNo: 'cs1201',
+                  fIsReleaseOrder: 0,
+                  label: 'cs1201',
+                  value: 'cs1201',
+                },
+              ],
+              OrderListVal: ['cs1201', '20211101'],
+              cRelateNo: 'cs1201,20211101',
+              fVersion: '2',
+            },
+            {
+              cWeekNo: '2021第21周(11.22~11.28)',
+              cProductNo: '002',
+              cProductName: '300',
+              fGrossCount: '200',
+              fBalanceCount: '100',
+              fProduceCount: '100',
+              fATPCount: '10',
+              OrderList: [
+                {
+                  cProductionOrderNo: 'cs1201',
+                  fIsReleaseOrder: 0,
+                  label: 'cs1201',
+                  value: 'cs1201',
+                },
+                {
+                  cProductionOrderNo: '20211101',
+                  fIsReleaseOrder: 1,
+                  label: '20211101',
+                  value: '20211101',
+                },
+              ],
+              OrderListVal: ['cs1201', '20211101'],
+              cRelateNo: 'cs1201,20211101',
+              fVersion: '2',
+            },
+          ],
+        },
+      }
+    },
   ],
 }
 
@@ -265,12 +262,8 @@ const cellStyle = ({ row, column }) => {
 
 //#endregion
 
-function log(v) {
-  console.log('vvvvvvvvv', v)
-}
-
 //#region ## 表格工具栏 ==================================================
-const salesOrderTable = ref()
+const salesOrderTableRef = ref()
 
 //#endregion
 
@@ -295,7 +288,7 @@ const visibleCheckModal = ref(false)
 
 function handleStoreUniformityCheck() {
   // 是否选中行
-  const selectedRows = salesOrderTable.value.getSelectedRows()
+  const selectedRows = salesOrderTableRef.value.getSelectedRows()
   if (!selectedRows) {
     return
   }
@@ -341,13 +334,13 @@ function handleVisibleChange(bool) {
       <h2 class="font-bold text-lg">期计划系统</h2>
 
       <BaseTable
-        id="salesOrderTable"
-        ref="salesOrderTable"
+        id="salesOrderTableRef"
+        ref="salesOrderTableRef"
         :cell-style="cellStyle"
-        :data="tableData"
         :edit-config="{ trigger: 'click', mode: 'cell' }"
         has-pager
         row-id="cProductNo"
+        v-bind="salesOrderTable"
       >
         <template #buttons-left>
           <a-button @click="showModal">excel导入</a-button>
@@ -373,7 +366,7 @@ function handleVisibleChange(bool) {
           <vxe-column :edit-render="{}" field="tProduceBeginDate" show-overflow="tooltip" title="组装开始时间">
             <template #default="{ row }">
               <span>
-                {{ row.tProduceBeginDate }}
+                {{ formatTime(row.tProduceBeginDate) }}
               </span>
               <EditOutlined class="-translate-y-0.5 text-green-400 ml-2" />
             </template>
@@ -396,7 +389,6 @@ function handleVisibleChange(bool) {
         <BaseTable
           id="materialTable"
           ref="materialTableRef"
-          :data="tableData2"
           :edit-config="{ trigger: 'click', mode: 'cell' }"
           has-pager
           row-id="cProductNo"
@@ -416,6 +408,8 @@ function handleVisibleChange(bool) {
             >
               <a-button>工单下达</a-button>
             </a-popconfirm>
+            <!--             TODO 需要提示-->
+            <a-button>工单导出</a-button>
           </template>
         </BaseTable>
       </div>
@@ -426,7 +420,7 @@ function handleVisibleChange(bool) {
     <!--    齐套性检测对话框 -->
     <a-modal v-model:visible="visibleCheckModal" class="flex justify-center" :footer="null" title="仓库齐套性检测" width="auto">
       <div class="min-w-[1200px]">
-        <BaseTable id="storeUniformityCheck" :data="tableData2" :has-checkbox="false" row-id="cProductNo" v-bind="materialTable" />
+        <BaseTable id="storeUniformityCheck" :has-checkbox="false" row-id="cProductNo" v-bind="materialTable" />
       </div>
     </a-modal>
   </a-config-provider>

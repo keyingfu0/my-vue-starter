@@ -73,9 +73,13 @@ VXETable.formats.mixin({
     const item = list.find((item) => item.value === cellValue)
     return item ? item.label : ''
   },
-  // 格式化日期，默认 yyyy-MM-dd HH:mm:ss
-  formatDate({ cellValue }, format) {
+  // 格式化时间，默认 yyyy-MM-dd HH:mm:ss
+  formatTime({ cellValue }, format) {
     return XEUtils.toDateString(cellValue, format || 'yyyy-MM-dd HH:mm:ss')
+  },
+  // 格式化日期，默认 yyyy-MM-dd
+  formatDate({ cellValue }, format) {
+    return XEUtils.toDateString(cellValue, format || 'yyyy-MM-dd')
   },
   // 四舍五入金额，每隔3位逗号分隔，默认2位数
   formatAmount({ cellValue }, digits = 2) {

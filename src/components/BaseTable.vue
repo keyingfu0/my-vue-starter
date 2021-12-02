@@ -2,14 +2,11 @@
 import { h, nextTick, reactive, ref, resolveComponent } from 'vue'
 import message from 'ant-design-vue/lib/message'
 import 'ant-design-vue/lib/message/style/index.css'
-import { useList } from '@/utils/useRequest'
+import useRequest, { useList } from '@/utils/useRequest'
 import request from '@/utils/request'
+import { ReloadOutlined } from '@ant-design/icons-vue'
 
 const props = defineProps({
-  data: {
-    type: Array,
-    default: () => [],
-  },
   columnSchema: {
     type: Array,
     default: () => [],
@@ -64,8 +61,12 @@ const columns = () => {
 
 //#region ## 数据请求 ==================================================
 
-const { data: resData, current, total, pageSize } = props.requestConfig ? useList.$preset(['get-list'])(...props.requestConfig) : {}
-console.log('-> tableData', resData)
+const { data = [], loading, current, total, pageSize, refresh } = props.requestConfig ? useList.$preset(['get-list'])(...props.requestConfig) : {}
+// const {data, refresh} = useRequest(...props.requestConfig)
+// useRequest(()=>{
+//   return
+// })
+console.log('-> tableData', data)
 // console.log('rrrr', rrrr)
 
 //#endregion
@@ -112,6 +113,11 @@ defineExpose({
         </div>
         <div class="space-x-4">
           <slot name="buttons-right"></slot>
+          <a-button shape="circle" @click="refresh">
+            <template #icon>
+              <ReloadOutlined class="-translate-y-0.5" />
+            </template>
+          </a-button>
         </div>
       </div>
     </template>
@@ -124,6 +130,7 @@ defineExpose({
     :column-config="{ resizable: true }"
     :custom-config="{ storage: true }"
     :data="data"
+    :loading="loading"
     :print-config="{}"
     highlight-hover-row
     v-bind="$attrs"
