@@ -56,9 +56,12 @@ async function finishImport() {
 //#region ## 订单表 ==================================================
 const salesOrderTable = {
   requestConfig: [
-    async () => {
+    async (params) => {
       return request('/ApsSalesOrderInfo/GetApsSalesOrderInfoPageList', {
         method: 'post',
+        data: {
+          ...params,
+        },
       })
     },
   ],

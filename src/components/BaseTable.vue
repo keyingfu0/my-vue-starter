@@ -76,7 +76,8 @@ const columns = () => {
 
 //#region ## 数据请求 ==================================================
 
-const { data = [], loading, current, total, pageSize, refresh } = props.requestConfig ? useList.$preset(['get-list'])(...props.requestConfig) : {}
+const { data = [], loading, current, total, pageSize, refresh, changePagination } = props.requestConfig ? useList(...props.requestConfig) : {}
+console.log('-> total', total)
 // const {data, refresh} = useRequest(...props.requestConfig)
 // useRequest(()=>{
 //   return
@@ -95,15 +96,20 @@ console.log('-> tableData', data)
 //#endregion
 
 //#region ## 分页 ==================================================
-const tablePage = reactive({
-  total: 0,
-  currentPage: 1,
-  pageSize: 10,
-})
-const handlePageChange = ({ currentPage, pageSize }) => {
-  tablePage.currentPage = currentPage
-  tablePage.pageSize = pageSize
-  // findList()
+// const tablePage = reactive({
+//   total: 0,
+//   currentPage: 1,
+//   pageSize: 10,
+// })
+// const handlePageChange = ({ currentPage, pageSize: _pageSize }) => {
+//   current.value = currentPage
+//   pageSize.value = _pageSize
+//   // findList()
+// }
+
+function handlePageSizeChange(val) {
+  // NOTE 记得重置到第一页, 需要用这种一起改变!!
+  changePagination(1, val)
 }
 
 //#endregion
@@ -184,7 +190,7 @@ defineExpose({
     :checkbox-config="{ range: true, highlight: true }"
     :column-config="{ resizable: true }"
     :custom-config="{ storage: true }"
-    :data="data"
+    :data="data.List"
     :loading="loading"
     :print-config="{}"
     highlight-hover-row
@@ -210,11 +216,34 @@ defineExpose({
 
   <vxe-pager
     v-if="hasPager"
-    v-model:current-page="tablePage.currentPage"
-    v-model:page-size="tablePage.pageSize"
+    v-model:current-page="current"
     :layouts="['Sizes', 'PrevJump', 'PrevPage', 'Number', 'NextPage', 'NextJump', 'FullJump', 'Total']"
-    :total="tablePage.total"
-    @page-change="handlePageChange"
+    :page-size="pageSize"
+    :page-sizes="[
+      {
+        value: 10,
+        label: '10 条/页',
+      },
+      {
+        value: 50,
+        label: '50 条/页',
+      },
+      {
+        value: 100,
+        label: '100 条/页',
+      },
+      {
+        value: 500,
+        label: '500 条/页',
+      },
+      {
+        value: 99999,
+        label: '全部',
+      },
+    ]"
+    :total="total"
+    @update:page-size="handlePageSizeChange"
   >
+    <!--    @page-change="handlePageChange"-->
   </vxe-pager>
 </template>
