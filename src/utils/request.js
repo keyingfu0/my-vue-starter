@@ -53,9 +53,9 @@ const handleData = ({ config, data, status, statusText }) => {
 request.interceptors.request.use(
   (config) => {
     //#region ## 为请求统一添加某些数据 ==================================================
-    if (config.data) {
-      config.data.fAppInfoId = 2133
-    }
+    // if (config.data) {
+    //   config.data.fAppInfoId = 2133
+    // }
     //#endregion
 
     return config

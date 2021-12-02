@@ -16,7 +16,7 @@ import 'dayjs/locale/zh-cn'
 import request from '@/utils/request'
 import useRequest, { useList } from '@/utils/useRequest'
 import { formatTime } from '@/utils/time'
-import { isArray, isObject } from 'lodash'
+import { isArray, isObject, map } from 'lodash'
 
 dayjs.locale('zh-cn')
 
@@ -245,14 +245,35 @@ const materialTable = {
 
 //#region ## 编辑保存 ==================================================
 const hasEdit = ref(false)
+const editedRows = shallowRef({})
 
 function handleCellChange(row, column) {
   hasEdit.value = true
   row._hasEdit = true
+  editedRows.value = {
+    ...editedRows.value,
+    [row.id]: row,
+  }
 }
 
-function saveTable() {
+async function saveTable() {
   hasEdit.value = false
+  const List = map(editedRows.value, (row) => {
+    const { id, tProduceBeginDate } = row
+    return {
+      id,
+      tProduceBeginDate,
+    }
+  })
+  await request('/ApsSalesOrderInfo/EditApsSalesOrderProductBeginTime', {
+    method: 'POST',
+    data: {
+      List,
+    },
+  })
+  editedRows.value = {}
+  message.success('保存成功!')
+  salesOrderTableRef.value.refresh()
 }
 
 function resetTable() {
