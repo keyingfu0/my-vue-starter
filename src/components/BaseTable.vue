@@ -1,5 +1,7 @@
 <script setup>
 import { h, nextTick, reactive, ref, resolveComponent } from 'vue'
+import message from 'ant-design-vue/lib/message'
+import 'ant-design-vue/lib/message/style/index.css'
 
 const props = defineProps({
   data: {
@@ -66,6 +68,23 @@ const handlePageChange = ({ currentPage, pageSize }) => {
   // findList()
 }
 
+//#endregion
+
+//#region ## 获取选中行 ==================================================
+function getSelectedRows() {
+  const selectedRows = table.value.getCheckboxRecords()
+  console.log('-> selectedRows', selectedRows)
+  if (!selectedRows.length) {
+    message.warning('未选中数据!')
+    return null
+  }
+
+  return selectedRows
+}
+
+defineExpose({
+  getSelectedRows,
+})
 //#endregion
 </script>
 

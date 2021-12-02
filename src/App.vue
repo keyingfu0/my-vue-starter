@@ -277,8 +277,8 @@ nextTick(() => {
 //#region ## 订单表格单选 ==================================================
 // const selectRow = shallowRef()
 
-function getSelectedRows() {
-  const selectedRows = salesOrderTable.value.getCheckboxRecords()
+function getSelectedRows(tableRef) {
+  const selectedRows = tableRef.value.getCheckboxRecords()
   console.log('-> selectedRows', selectedRows)
   if (!selectedRows.length) {
     message.warning('未选中数据!')
@@ -295,12 +295,33 @@ const visibleCheckModal = ref(false)
 
 function handleStoreUniformityCheck() {
   // 是否选中行
-  const selectedRows = getSelectedRows()
+  const selectedRows = getSelectedRows(salesOrderTable)
   if (!selectedRows) {
     return
   }
 
   visibleCheckModal.value = true
+}
+
+//#endregion
+
+//#region ## 工单下达 ==================================================
+const isWorkOrderReleaseConfirmVisible = ref(false)
+const materialTableRef = ref()
+
+function handleVisibleChange(bool) {
+  if (!bool) {
+    isWorkOrderReleaseConfirmVisible.value = false
+    return
+  } // Determining condition before show the popconfirm.
+
+  // 是否选中行
+  const selectedRows = materialTableRef.value.getSelectedRows()
+  if (!selectedRows) {
+    isWorkOrderReleaseConfirmVisible.value = false
+    return
+  }
+  isWorkOrderReleaseConfirmVisible.value = true
 }
 
 //#endregion
@@ -393,12 +414,28 @@ function handleStoreUniformityCheck() {
       <a-divider />
       <h2 class="font-bold text-lg">物料需求清单</h2>
       <div class="mt-4">
-        <BaseTable id="materialTable" :data="tableData2" :edit-config="{ trigger: 'click', mode: 'cell' }" has-pager row-id="cProductNo" v-bind="materialTable">
+        <BaseTable
+          id="materialTable"
+          ref="materialTableRef"
+          :data="tableData2"
+          :edit-config="{ trigger: 'click', mode: 'cell' }"
+          has-pager
+          row-id="cProductNo"
+          v-bind="materialTable"
+        >
           <template #buttons-left>
             <a-button @click="handleClick">毛需求计算</a-button>
             <a-button @click="handleClick">获取期初结余</a-button>
             <a-button @click="handleClick">本期在制量</a-button>
-            <a-button @click="handleClick">工单下达</a-button>
+            <a-popconfirm
+              :visible="isWorkOrderReleaseConfirmVisible"
+              cancel-text="取消"
+              ok-text="确认"
+              title="确认下达工单?"
+              @visibleChange="handleVisibleChange"
+            >
+              <a-button>工单下达</a-button>
+            </a-popconfirm>
           </template>
         </BaseTable>
       </div>
