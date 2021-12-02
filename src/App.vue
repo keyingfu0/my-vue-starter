@@ -393,12 +393,12 @@ function handleStoreUniformityCheck() {
       <a-divider />
       <h2 class="font-bold text-lg">物料需求清单</h2>
       <div class="mt-4">
-        <BaseTable id="materialTable" :data="tableData2" :edit-config="{ trigger: 'click', mode: 'cell' }" row-id="cProductNo" v-bind="materialTable">
+        <BaseTable id="materialTable" :data="tableData2" :edit-config="{ trigger: 'click', mode: 'cell' }" has-pager row-id="cProductNo" v-bind="materialTable">
           <template #buttons-left>
-            <a-button type="primary" @click="handleClick">毛需求计算</a-button>
-            <a-button type="primary" @click="handleClick">获取期初结余</a-button>
-            <a-button type="primary" @click="handleClick">本期在制量</a-button>
-            <a-button type="primary" @click="handleClick">工单下达</a-button>
+            <a-button @click="handleClick">毛需求计算</a-button>
+            <a-button @click="handleClick">获取期初结余</a-button>
+            <a-button @click="handleClick">本期在制量</a-button>
+            <a-button @click="handleClick">工单下达</a-button>
           </template>
         </BaseTable>
       </div>

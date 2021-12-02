@@ -1,5 +1,5 @@
 <script setup>
-import { h, nextTick, ref, resolveComponent } from 'vue'
+import { h, nextTick, reactive, ref, resolveComponent } from 'vue'
 
 const props = defineProps({
   data: {
@@ -17,6 +17,10 @@ const props = defineProps({
   hasToolbar: {
     type: Boolean,
     default: true,
+  },
+  hasPager: {
+    type: Boolean,
+    default: false,
   },
 })
 
@@ -49,6 +53,20 @@ const columns = () => {
     )
   })
 }
+
+//#region ## 分页 ==================================================
+const tablePage = reactive({
+  total: 0,
+  currentPage: 1,
+  pageSize: 10,
+})
+const handlePageChange = ({ currentPage, pageSize }) => {
+  tablePage.currentPage = currentPage
+  tablePage.pageSize = pageSize
+  // findList()
+}
+
+//#endregion
 </script>
 
 <template>
@@ -82,4 +100,14 @@ const columns = () => {
     <!--      &lt;!&ndash;      </template>&ndash;&gt;-->
     <!--    </vxe-column>-->
   </vxe-table>
+
+  <vxe-pager
+    v-if="hasPager"
+    v-model:current-page="tablePage.currentPage"
+    v-model:page-size="tablePage.pageSize"
+    :layouts="['Sizes', 'PrevJump', 'PrevPage', 'Number', 'NextPage', 'NextJump', 'FullJump', 'Total']"
+    :total="tablePage.total"
+    @page-change="handlePageChange"
+  >
+  </vxe-pager>
 </template>
