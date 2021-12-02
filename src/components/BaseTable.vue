@@ -149,6 +149,7 @@ defineExpose({
     :loading="loading"
     :print-config="{}"
     highlight-hover-row
+    row-id="id"
     v-bind="$attrs"
   >
     <vxe-column v-if="hasCheckbox" type="checkbox" width="60"></vxe-column>

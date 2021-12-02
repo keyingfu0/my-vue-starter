@@ -1,6 +1,12 @@
 import axios from 'axios'
-import { ElMessage } from 'element-plus'
+// import { ElMessage } from 'element-plus'
 import { router } from '@/routes'
+import message from 'ant-design-vue/lib/message'
+import 'ant-design-vue/lib/message/style/index.css'
+
+message.config({
+  duration: 2,
+})
 
 //#region ## 根据配置创建 axios 请求实例 ==================================================
 const request = axios.create({
@@ -22,10 +28,7 @@ const handleData = ({ config, data, status, statusText }) => {
 
   const { Code, Message } = data
   if (status === 401) {
-    ElMessage.info({
-      message: `请先登录`,
-      type: 'info',
-    })
+    message.info('请先登录')
     router.replace({
       name: 'login',
     })
@@ -33,20 +36,14 @@ const handleData = ({ config, data, status, statusText }) => {
   }
 
   if (Code !== 10000) {
-    ElMessage.error({
-      message: `${Message}`,
-      type: 'error',
-    })
+    message.error(Message)
     return Promise.reject({ config, data, status, statusText })
   }
 
   // const { customPayload = {} } = config
   const { successMessage } = config
   if (successMessage) {
-    ElMessage.success({
-      message: `${successMessage}`,
-      type: 'success',
-    })
+    message.success(successMessage)
   }
 
   return data

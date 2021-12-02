@@ -55,10 +55,11 @@ async function finishImport() {
 //#region ## 订单表 ==================================================
 const salesOrderTable = {
   requestConfig: [
-    () =>
-      request('/ApsSalesOrderInfo/GetApsSalesOrderInfoPageList', {
+    async () => {
+      return request('/ApsSalesOrderInfo/GetApsSalesOrderInfoPageList', {
         method: 'post',
-      }),
+      })
+    },
   ],
 }
 
@@ -342,7 +343,6 @@ function handleVisibleChange(bool) {
         :cell-style="cellStyle"
         :edit-config="{ trigger: 'click', mode: 'cell' }"
         has-pager
-        row-id="cProductNo"
         v-bind="salesOrderTable"
       >
         <template #buttons-left>
