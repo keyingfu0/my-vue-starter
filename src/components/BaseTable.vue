@@ -2,6 +2,8 @@
 import { h, nextTick, reactive, ref, resolveComponent } from 'vue'
 import message from 'ant-design-vue/lib/message'
 import 'ant-design-vue/lib/message/style/index.css'
+import { useList } from '@/utils/useRequest'
+import request from '@/utils/request'
 
 const props = defineProps({
   data: {
@@ -23,6 +25,10 @@ const props = defineProps({
   hasPager: {
     type: Boolean,
     default: false,
+  },
+  requestConfig: {
+    type: Array,
+    default: null,
   },
 })
 
@@ -55,6 +61,14 @@ const columns = () => {
     )
   })
 }
+
+//#region ## 数据请求 ==================================================
+
+const { data: resData, current, total, pageSize } = props.requestConfig ? useList.$preset(['get-list'])(...props.requestConfig) : {}
+console.log('-> tableData', resData)
+// console.log('rrrr', rrrr)
+
+//#endregion
 
 //#region ## 分页 ==================================================
 const tablePage = reactive({
@@ -104,7 +118,16 @@ defineExpose({
   </vxe-toolbar>
   <!--   NOTE 需要解决点击编辑冲突的问题-->
   <!--    :checkbox-config="{ checkField: 'checked', trigger: 'row' }"-->
-  <vxe-table ref="table" class="mt-4" :column-config="{ resizable: true }" :custom-config="{ storage: true }" :data="data" highlight-hover-row v-bind="$attrs">
+  <vxe-table
+    ref="table"
+    class="mt-4"
+    :column-config="{ resizable: true }"
+    :custom-config="{ storage: true }"
+    :data="data"
+    :print-config="{}"
+    highlight-hover-row
+    v-bind="$attrs"
+  >
     <vxe-column v-if="hasCheckbox" type="checkbox" width="60"></vxe-column>
     <vxe-column type="seq" width="60"></vxe-column>
     <component :is="columns"></component>

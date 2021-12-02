@@ -13,6 +13,8 @@ import 'ant-design-vue/lib/message/style/index.css'
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import dayjs from 'dayjs'
 import 'dayjs/locale/zh-cn'
+import request from '@/utils/request'
+import useRequest, { useList } from '@/utils/useRequest'
 
 dayjs.locale('zh-cn')
 
@@ -87,7 +89,7 @@ const tableData2 = reactive([
 ])
 
 function handleClick() {
-  tableData.value[0].name = '测试'
+  // tableData.value[0].name = '测试'
 }
 
 function selectAllChangeEvent() {}
@@ -224,6 +226,12 @@ const materialTable = {
       title: '版本',
     },
   ],
+  requestConfig: [
+    () =>
+      request('/ApsSalesOrderInfo/GetApsSalesOrderInfoPageList', {
+        method: 'post',
+      }),
+  ],
 }
 
 //#endregion
@@ -263,14 +271,6 @@ function log(v) {
 
 //#region ## 表格工具栏 ==================================================
 const salesOrderTable = ref()
-const salesOrderTableToolbar = ref()
-
-nextTick(() => {
-  // 将表格和工具栏进行关联
-  const $table = salesOrderTable.value
-  const $toolbar = salesOrderTableToolbar.value
-  $table.connect($toolbar)
-})
 
 //#endregion
 
@@ -295,7 +295,7 @@ const visibleCheckModal = ref(false)
 
 function handleStoreUniformityCheck() {
   // 是否选中行
-  const selectedRows = getSelectedRows(salesOrderTable)
+  const selectedRows = salesOrderTable.value.getSelectedRows()
   if (!selectedRows) {
     return
   }
@@ -340,75 +340,54 @@ function handleVisibleChange(bool) {
       </div>
       <h2 class="font-bold text-lg">期计划系统</h2>
 
-      <!--     上方按钮 -->
-      <vxe-toolbar ref="salesOrderTableToolbar" custom print>
-        <template #buttons>
-          <div class="flex justify-between mr-4">
-            <div class="space-x-4">
-              <a-button @click="showModal">excel导入</a-button>
-              <a-button @click="handleStoreUniformityCheck">仓库齐套性检测</a-button>
-              <a-button @click="handleClick">打印组装单</a-button>
-              <a-button @click="handleStoreUniformityCheck">ATP齐套性检测</a-button>
-            </div>
-            <div class="space-x-4">
-              <a-button v-show="hasEdit" type="primary" @click="saveTable">保存编辑</a-button>
-              <a-button v-show="hasEdit" @click="resetTable">取消编辑</a-button>
-            </div>
-          </div>
-        </template>
-      </vxe-toolbar>
-      <vxe-table
+      <BaseTable
         id="salesOrderTable"
         ref="salesOrderTable"
-        class="mt-4"
         :cell-style="cellStyle"
-        :column-config="{ resizable: true }"
-        :custom-config="{ storage: true }"
         :data="tableData"
         :edit-config="{ trigger: 'click', mode: 'cell' }"
-        :print-config="{}"
-        :radio-config="{ highlight: true }"
-        highlight-hover-row
+        has-pager
         row-id="cProductNo"
-        @checkbox-all="selectAllChangeEvent"
-        @checkbox-change="selectChangeEvent"
       >
-        <vxe-column type="checkbox" width="60"></vxe-column>
-        <vxe-column type="seq" width="60"></vxe-column>
-        <!--      <vxe-column show-overflow="tooltip" field="name" title="Name">-->
-        <!--        <template #default="{ row }">-->
-        <!--          <span>自定义插槽模板 {{ row.name }}</span>-->
-
-        <!--        </template>-->
-        <!--      </vxe-column>-->
-
-        <vxe-column field="cProductNo" show-overflow="tooltip" title="物料编码"></vxe-column>
-        <vxe-column
-          field="cProductName"
-          show-overflow="tooltip"
-          title="成品名字
+        <template #buttons-left>
+          <a-button @click="showModal">excel导入</a-button>
+          <a-button @click="handleStoreUniformityCheck">仓库齐套性检测</a-button>
+          <a-button @click="handleClick">打印组装单</a-button>
+          <a-button @click="handleStoreUniformityCheck">ATP齐套性检测</a-button>
+        </template>
+        <template #buttons-right>
+          <a-button v-show="hasEdit" type="primary" @click="saveTable">保存编辑</a-button>
+          <a-button v-show="hasEdit" @click="resetTable">取消编辑</a-button>
+        </template>
+        <template #default>
+          <vxe-column field="cProductNo" show-overflow="tooltip" title="物料编码"></vxe-column>
+          <vxe-column
+            field="cProductName"
+            show-overflow="tooltip"
+            title="成品名字
 "
-        ></vxe-column>
-        <vxe-column field="cCustomerName" show-overflow="tooltip" title="客户名"></vxe-column>
-        <vxe-column field="fCount" show-overflow="tooltip" title="数量"></vxe-column>
-        <!--        :edit-render="{ name: 'ADatePicker' }"-->
-        <vxe-column :edit-render="{}" field="tProduceBeginDate" show-overflow="tooltip" title="组装开始时间">
-          <template #default="{ row }">
-            <span>
-              {{ row.tProduceBeginDate }}
-            </span>
-            <EditOutlined class="-translate-y-0.5 text-green-400 ml-2" />
-          </template>
-          <template #edit="{ row, column }">
-            <!--  ? ant-design-vue的update和change事件均无效, 不知道原因... -->
-            <!--                      <a-date-picker :value="dayjs(row.tProduceBeginDate)" @update:value="log" />-->
-            <vxe-input v-model="row.tProduceBeginDate" placeholder="请选择日期" transfer type="date" @change="handleCellChange(row, column)"></vxe-input>
-          </template>
-        </vxe-column>
-        <vxe-column field="cRelateNo" show-overflow="tooltip" title="关联组装单"></vxe-column>
-        <vxe-column field="fStatus" show-overflow="tooltip" title="是否结案"></vxe-column>
-        <vxe-column show-overflow="tooltip" title="操作">操作</vxe-column>
-      </vxe-table>
+          ></vxe-column>
+          <vxe-column field="cCustomerName" show-overflow="tooltip" title="客户名"></vxe-column>
+          <vxe-column field="fCount" show-overflow="tooltip" title="数量"></vxe-column>
+          <!--        :edit-render="{ name: 'ADatePicker' }"-->
+          <vxe-column :edit-render="{}" field="tProduceBeginDate" show-overflow="tooltip" title="组装开始时间">
+            <template #default="{ row }">
+              <span>
+                {{ row.tProduceBeginDate }}
+              </span>
+              <EditOutlined class="-translate-y-0.5 text-green-400 ml-2" />
+            </template>
+            <template #edit="{ row, column }">
+              <!--  ? ant-design-vue的update和change事件均无效, 不知道原因... -->
+              <!--                      <a-date-picker :value="dayjs(row.tProduceBeginDate)" @update:value="log" />-->
+              <vxe-input v-model="row.tProduceBeginDate" placeholder="请选择日期" transfer type="date" @change="handleCellChange(row, column)"></vxe-input>
+            </template>
+          </vxe-column>
+          <vxe-column field="cRelateNo" show-overflow="tooltip" title="关联组装单"></vxe-column>
+          <vxe-column field="fStatus" show-overflow="tooltip" title="是否结案"></vxe-column>
+          <vxe-column show-overflow="tooltip" title="操作">操作</vxe-column>
+        </template>
+      </BaseTable>
 
       <!--    毛需求计算 -->
       <a-divider />

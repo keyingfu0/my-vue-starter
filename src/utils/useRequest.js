@@ -12,6 +12,7 @@ import { ElMessage } from 'element-plus'
 
 //#region ## 实现类似 vue3 组合式api 的注册钩子的能力 ==================================================
 let currentInstance = null
+
 function setCurrentInstance(instance) {
   currentInstance = instance
 }
@@ -20,10 +21,8 @@ export function injectHook(type, hook, target = currentInstance) {
   const hooks = target[type] ?? (target[type] = [])
   hooks.push(hook)
 }
-const createHook =
-  (type) =>
-  (hook, target = currentInstance) =>
-    injectHook(type, hook, target)
+
+const createHook = (type) => (hook, target = currentInstance) => injectHook(type, hook, target)
 
 //#endregion
 
@@ -41,7 +40,7 @@ export const onSuccess = createHook('onSuccessHooks')
  * - 通过函数注册的按先后顺序依次执行
  * - 同时存在选项和函数, 选项作为第一个注册的函数
  */
-function useRequest(service, options) {
+function useRequest(service, options = {}) {
   //#region ### 设置实例 ==================================================
   const instance = {}
   setCurrentInstance(instance)
@@ -215,7 +214,7 @@ useRequest.$preset = function setPreset(_presets = []) {
     return acc
   }, {})
 
-  const wrappedFn = (data, options) => {
+  const wrappedFn = (data, options = {}) => {
     return fn(data, {
       ...presetOptions,
       ...options,
