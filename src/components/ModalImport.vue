@@ -52,6 +52,9 @@ watch(
   },
 )
 
+const importRef = ref(null)
+const uploading = ref(false)
+
 const steps = [
   {
     title: '下载模板',
@@ -84,12 +87,16 @@ const steps = [
     content: {
       template: `
         <a-alert class="mt-4" message="请保持列名和模板一致,否则无法导入数据" type="info" show-icon banner/>
-        <ImportExcel v-model:data="excelData" :next="next"
+        <ImportExcel ref="importRef" v-model:data="excelData" :next="next"
+                     action="/ApsSalesOrderInfo/SalesOrderInfoImport"
+                     :uploading="uploading"
                      v-model:is-loading="nextButtonState['1'].loading"></ImportExcel>`,
       components: { ImportExcel, AAlert },
       setup() {
         return {
           next,
+          importRef,
+          uploading,
           nextButtonState,
           excelData,
         }
@@ -111,6 +118,7 @@ const steps = [
           excelData,
           tableConfig: {
             hasCheckbox: false,
+            customConfig: {},
             rowId: '订单编号',
             columnSchema: [
               {
@@ -141,6 +149,15 @@ const steps = [
     },
   },
 ]
+
+//#region ## 完成导入 ==================================================
+async function handleFinish() {
+  // emit.finish()
+  await importRef.value.upload()
+  emit('finish')
+}
+
+//#endregion
 </script>
 
 <template>
@@ -158,9 +175,9 @@ const steps = [
     </div>
     <template #footer>
       <div class="steps-action">
-        <a-button v-if="current > 0" style="margin-left: 8px" @click="prev">上一步</a-button>
+        <a-button v-if="current > 0" :loading="uploading" style="margin-left: 8px" @click="prev">上一步</a-button>
         <a-button v-if="current < steps.length - 1" type="primary" v-bind="nextButtonState[current]" @click="next">下一步 </a-button>
-        <a-button v-if="current === steps.length - 1" type="primary" @click="emit('finish')"> 完成</a-button>
+        <a-button v-if="current === steps.length - 1" :loading="uploading" type="primary" @click="handleFinish"> 完成 </a-button>
       </div>
     </template>
   </a-modal>

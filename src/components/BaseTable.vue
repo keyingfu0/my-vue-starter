@@ -1,5 +1,5 @@
 <script setup>
-import { h, nextTick, reactive, ref, resolveComponent } from 'vue'
+import { h, nextTick, reactive, ref, resolveComponent, watch } from 'vue'
 import message from 'ant-design-vue/lib/message'
 import 'ant-design-vue/lib/message/style/index.css'
 import useRequest, { useList } from '@/utils/useRequest'
@@ -27,6 +27,13 @@ const props = defineProps({
     type: Array,
     default: null,
   },
+  // /**
+  //  * 表格数据是否新鲜
+  //  */
+  // isFresh: {
+  //   type: Boolean,
+  //   default: false,
+  // },
 })
 
 //#region ## 表格工具栏 ==================================================
@@ -67,6 +74,14 @@ const { data = [], loading, current, total, pageSize, refresh } = props.requestC
 //   return
 // })
 console.log('-> tableData', data)
+
+// 当表格数据不新鲜时刷新表格数据
+// watch(()=>props.isFresh,async (newVal)=>{
+//   if(!newVal){
+//     await refresh()
+//     update
+//   }
+// })
 // console.log('rrrr', rrrr)
 
 //#endregion
@@ -99,6 +114,7 @@ function getSelectedRows() {
 
 defineExpose({
   getSelectedRows,
+  refresh,
 })
 //#endregion
 </script>

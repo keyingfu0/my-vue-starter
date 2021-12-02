@@ -3,10 +3,11 @@ import { InboxOutlined } from '@ant-design/icons-vue'
 import { computed, nextTick, ref, shallowRef, watch } from 'vue'
 import { readExcel } from '@/utils/excel.js'
 import { last } from 'lodash'
+import request from '@/utils/request'
+import message from 'ant-design-vue/lib/message'
 
 const fileList = ref([])
 
-//#region ## 跳转到下一页 ==================================================
 const props = defineProps({
   isLoading: {
     type: Boolean,
@@ -16,9 +17,19 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  action: {
+    type: String,
+    default: '',
+  },
+  uploading: {
+    type: Boolean,
+    default: false,
+  },
 })
 
-const emit = defineEmits(['update:isLoading', 'update:data'])
+//#region ## 跳转到下一页 ==================================================
+
+const emit = defineEmits(['update:isLoading', 'update:data', 'update:uploading'])
 
 function setIsLoading(value) {
   emit('update:isLoading', value)
@@ -58,6 +69,31 @@ function beforeUpload(file, files) {
   // console.log('-> file', file)
   return false
 }
+
+async function upload() {
+  const formData = new FormData()
+  fileList.value.forEach((file) => {
+    console.log('-> file', file)
+    formData.append('file', file.originFileObj)
+  })
+  emit('update:uploading', true)
+
+  return request(props.action, {
+    method: 'post',
+    data: formData,
+  })
+    .then(() => {
+      fileList.value = []
+      emit('update:uploading', false)
+      message.success('上传成功!')
+    })
+    .catch(() => {
+      emit('update:uploading', false)
+      message.error('上传失败!')
+    })
+}
+
+defineExpose({ upload })
 </script>
 
 <template>
@@ -72,6 +108,9 @@ function beforeUpload(file, files) {
     >
       <template v-if="isLoading">
         <a-spin tip="正在导入数据中...请稍后" />
+      </template>
+      <template v-else-if="uploading">
+        <a-spin tip="正在上传中...请稍后" />
       </template>
       <template v-else>
         <p class="ant-upload-drag-icon">

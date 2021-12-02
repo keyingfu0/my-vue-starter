@@ -46,6 +46,8 @@ async function finishImport() {
   visible.value = false
   // NOTE 通过改变key的方式强制重启组件,使用组件的初始状态
   modalKey.value++
+  salesOrderTableRef.value.refresh()
+  console.log('-> salesOrderTableRef.value.refresh', salesOrderTableRef.value.refresh)
 }
 
 //#endregion
@@ -333,6 +335,7 @@ function handleVisibleChange(bool) {
       </div>
       <h2 class="font-bold text-lg">期计划系统</h2>
 
+      <!--       订单需求表 -->
       <BaseTable
         id="salesOrderTableRef"
         ref="salesOrderTableRef"
@@ -378,7 +381,7 @@ function handleVisibleChange(bool) {
           </vxe-column>
           <vxe-column field="cRelateNo" show-overflow="tooltip" title="关联组装单"></vxe-column>
           <vxe-column field="fStatus" show-overflow="tooltip" title="是否结案"></vxe-column>
-          <vxe-column show-overflow="tooltip" title="操作">操作</vxe-column>
+          <vxe-column show-overflow="tooltip" title="操作">删除</vxe-column>
         </template>
       </BaseTable>
 
