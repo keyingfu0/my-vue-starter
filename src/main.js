@@ -5,6 +5,13 @@ import { router } from './routes.js'
 import { createPinia } from 'pinia'
 
 import XEUtils from 'xe-utils'
+import VXETablePluginAntd from 'vxe-table-plugin-antd'
+import 'vxe-table-plugin-antd/dist/style.css'
+import ADatePicker from 'ant-design-vue/lib/date-picker'
+import 'ant-design-vue/lib/date-picker/style/index.css'
+import ASelect, { SelectOption } from 'ant-design-vue/lib/select'
+import 'ant-design-vue/lib/select/style/index.css'
+
 import {
   // 核心
   VXETable,
@@ -91,6 +98,7 @@ VXETable.formats.mixin({
     return cellValue ? cellValue.format(format) : ''
   },
 })
+VXETable.use(VXETablePluginAntd)
 
 function useTable(app) {
   // 表格功能
@@ -146,6 +154,10 @@ app.use(useTable)
 
 app.use(router)
 app.use(createPinia())
+
+// 为了能在vxe中使用, 全局注册antdv的组件
+app.use(ASelect)
+app.use(SelectOption)
 
 // app.directive('test', (...params) => {
 //   console.log('params', params)

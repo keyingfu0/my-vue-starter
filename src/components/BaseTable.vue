@@ -1,5 +1,7 @@
 <script setup>
-defineProps({
+import { h, nextTick, ref, resolveComponent } from 'vue'
+
+const props = defineProps({
   data: {
     type: Array,
     default: () => [],
@@ -12,22 +14,72 @@ defineProps({
     type: Boolean,
     default: true,
   },
+  hasToolbar: {
+    type: Boolean,
+    default: true,
+  },
 })
+
+//#region ## 表格工具栏 ==================================================
+const table = ref()
+const toolbar = ref()
+
+if (props.hasToolbar) {
+  nextTick(() => {
+    // 将表格和工具栏进行关联
+    const $table = table.value
+    const $toolbar = toolbar.value
+    $table.connect($toolbar)
+  })
+}
+
+//#endregion
+
+//
+const columns = () => {
+  return props.columnSchema.map((col) => {
+    return h(
+      resolveComponent('vxe-column'),
+      {
+        showOverflow: 'tooltip',
+        ...col,
+        key: col.field,
+      },
+      col.slots ?? {},
+    )
+  })
+}
 </script>
 
 <template>
-  <vxe-table
-    class="mt-4"
-    :checkbox-config="{ checkField: 'checked', trigger: 'row' }"
-    :column-config="{ resizable: true }"
-    :custom-config="{ storage: true }"
-    :data="data"
-    highlight-hover-row
-    stripe
-    v-bind="$attrs"
-  >
+  <!--     上方按钮 -->
+  <vxe-toolbar v-if="hasToolbar" ref="toolbar" custom print>
+    <template #buttons>
+      <div class="flex justify-between mr-4">
+        <div class="space-x-4">
+          <slot name="buttons-left"></slot>
+        </div>
+        <div class="space-x-4">
+          <slot name="buttons-right"></slot>
+        </div>
+      </div>
+    </template>
+  </vxe-toolbar>
+  <!--   NOTE 需要解决点击编辑冲突的问题-->
+  <!--    :checkbox-config="{ checkField: 'checked', trigger: 'row' }"-->
+  <vxe-table ref="table" class="mt-4" :column-config="{ resizable: true }" :custom-config="{ storage: true }" :data="data" highlight-hover-row v-bind="$attrs">
     <vxe-column v-if="hasCheckbox" type="checkbox" width="60"></vxe-column>
     <vxe-column type="seq" width="60"></vxe-column>
-    <vxe-column v-for="col in columnSchema" :key="col.field" show-overflow="tooltip" v-bind="col"></vxe-column>
+    <component :is="columns"></component>
+    <slot name="default"></slot>
+    <!--    <vxe-column v-for="col in columnSchema" :key="col.field" show-overflow="tooltip" v-bind="col">-->
+    <!--      &lt;!&ndash;      <template v-if="col.slots">&ndash;&gt;-->
+    <!--      &lt;!&ndash;        <template v-for="(slot,slotKey) in col.slots" :key="slotKey">&ndash;&gt;-->
+    <!--      &lt;!&ndash;          <tamplte v-slot:[slotKey]>&ndash;&gt;-->
+    <!--      &lt;!&ndash;            &ndash;&gt;-->
+    <!--      &lt;!&ndash;          </tamplte>&ndash;&gt;-->
+    <!--      &lt;!&ndash;        </template>&ndash;&gt;-->
+    <!--      &lt;!&ndash;      </template>&ndash;&gt;-->
+    <!--    </vxe-column>-->
   </vxe-table>
 </template>

@@ -1,8 +1,9 @@
 <script setup>
 // noinspection ES6UnusedImports
-import { h, nextTick, reactive, ref, shallowRef, watch } from 'vue'
+import { h, nextTick, reactive, ref, resolveComponent, shallowRef, watch } from 'vue'
 // import { Button as AButton, Tabs as Atab, TabPane } from 'ant-design-vue'
 import ImportExcel from '@/components/ImportExcel.vue'
+import { EditOutlined } from '@ant-design/icons-vue'
 
 import BaseTable from '@/components/BaseTable.vue'
 import ModalImport from '@/components/ModalImport.vue'
@@ -45,7 +46,16 @@ const tableData2 = reactive([
     fBalanceCount: '100',
     fProduceCount: '100',
     fATPCount: '10',
-    cRelateNo: '0012',
+    OrderList: [
+      {
+        cProductionOrderNo: 'cs1201',
+        fIsReleaseOrder: 0,
+        label: 'cs1201',
+        value: 'cs1201',
+      },
+    ],
+    OrderListVal: ['cs1201', '20211101'],
+    cRelateNo: 'cs1201,20211101',
     fVersion: '2',
   },
   {
@@ -56,18 +66,22 @@ const tableData2 = reactive([
     fBalanceCount: '100',
     fProduceCount: '100',
     fATPCount: '10',
-    cRelateNo: '0012',
-    fVersion: '2',
-  },
-  {
-    cWeekNo: '2021第21周(11.22~11.28)',
-    cProductNo: '003',
-    cProductName: '300',
-    fGrossCount: '200',
-    fBalanceCount: '100',
-    fProduceCount: '100',
-    fATPCount: '10',
-    cRelateNo: '0012',
+    OrderList: [
+      {
+        cProductionOrderNo: 'cs1201',
+        fIsReleaseOrder: 0,
+        label: 'cs1201',
+        value: 'cs1201',
+      },
+      {
+        cProductionOrderNo: '20211101',
+        fIsReleaseOrder: 1,
+        label: '20211101',
+        value: '20211101',
+      },
+    ],
+    OrderListVal: ['cs1201', '20211101'],
+    cRelateNo: 'cs1201,20211101',
     fVersion: '2',
   },
 ])
@@ -107,31 +121,106 @@ const materialTable = {
       title: '周次编码',
     },
     {
-      field: 'cProductNo',
+      field: 'cProductName',
       title: '零部件名字',
     },
     {
-      field: 'cProductName',
+      field: 'fGrossCount',
       title: '毛需求',
     },
     {
-      field: 'fGrossCount',
+      field: 'fBalanceCount',
       title: '期初结余',
     },
     {
-      field: 'fBalanceCount',
+      field: 'fProduceCount',
       title: '本周在制量',
     },
     {
-      field: 'fProduceCount',
+      field: 'fATPCount',
       title: 'ATP',
     },
     {
-      field: 'fATPCount',
+      field: 'OrderList',
       title: '关联工单',
+      editRender: {
+        // name: 'ASelect',
+        // options: [
+        //   {
+        //     label: '1',
+        //     value: '1',
+        //   },
+        //   {
+        //     label: '2',
+        //     value: '2',
+        //   },
+        // ],
+      },
+      //            <template #default="{ row, rowIndex }">
+      // <template v-if="rowIndex === 1">
+      //   <vxe-select v-model="row.flag1" transfer>
+      //     <vxe-option value="Y" label="是"></vxe-option>
+      //     <vxe-option value="N" label="否"></vxe-option>
+      //   </vxe-select>
+      // </template>
+      slots: {
+        edit: (props) =>
+          h(
+            {
+              template: `
+                <a-select
+                  v-model:value="row.OrderList"
+                  label-in-value
+                  mode="multiple"
+                  style="width: 100%"
+                  placeholder="请选择工单"
+                  option-label-prop="label"
+                >
+                <a-select-option v-for="option in options" :key="option.cProductionOrderNo"
+                                 :value="option.cProductionOrderNo" :label="option.cProductionOrderNo">
+                  {{ option.cProductionOrderNo }}
+                </a-select-option>
+
+                </a-select>`,
+              components: {},
+              props: ['row'],
+              setup() {
+                return {
+                  options: [
+                    {
+                      cProductionOrderNo: 'cs1201',
+                    },
+                    {
+                      cProductionOrderNo: '20211101',
+                    },
+                  ],
+                }
+              },
+            },
+            {
+              row: props.row,
+            },
+          ),
+        default: ({ row }) => {
+          return h(
+            'div',
+            null,
+            // row.OrderListVal,
+            [
+              row.OrderList.map((item) => {
+                return item.label
+              }).join(','),
+              // row.cRelateNo,
+              h(EditOutlined, {
+                class: '-translate-y-0.5 text-green-400 ml-2',
+              }),
+            ],
+          )
+        },
+      },
     },
     {
-      field: 'cRelateNo',
+      field: 'fVersion',
       title: '版本',
     },
   ],
@@ -260,7 +349,6 @@ function handleStoreUniformityCheck() {
         :radio-config="{ highlight: true }"
         highlight-hover-row
         row-id="cProductNo"
-        stripe
         @checkbox-all="selectAllChangeEvent"
         @checkbox-change="selectChangeEvent"
       >
@@ -282,10 +370,17 @@ function handleStoreUniformityCheck() {
         ></vxe-column>
         <vxe-column field="cCustomerName" show-overflow="tooltip" title="客户名"></vxe-column>
         <vxe-column field="fCount" show-overflow="tooltip" title="数量"></vxe-column>
-        <vxe-column :edit-render="{}" :formatter="['formatDate', 'yyyy/MM/dd']" field="tProduceBeginDate" show-overflow="tooltip" title="组装开始时间">
+        <!--        :edit-render="{ name: 'ADatePicker' }"-->
+        <vxe-column :edit-render="{}" field="tProduceBeginDate" show-overflow="tooltip" title="组装开始时间">
+          <template #default="{ row }">
+            <span>
+              {{ row.tProduceBeginDate }}
+            </span>
+            <EditOutlined class="-translate-y-0.5 text-green-400 ml-2" />
+          </template>
           <template #edit="{ row, column }">
             <!--  ? ant-design-vue的update和change事件均无效, 不知道原因... -->
-            <!--            <a-date-picker :value="dayjs(row.tProduceBeginDate)" @update:value="log" />-->
+            <!--                      <a-date-picker :value="dayjs(row.tProduceBeginDate)" @update:value="log" />-->
             <vxe-input v-model="row.tProduceBeginDate" placeholder="请选择日期" transfer type="date" @change="handleCellChange(row, column)"></vxe-input>
           </template>
         </vxe-column>
@@ -298,13 +393,14 @@ function handleStoreUniformityCheck() {
       <a-divider />
       <h2 class="font-bold text-lg">物料需求清单</h2>
       <div class="mt-4">
-        <div class="space-x-4">
-          <a-button type="primary" @click="handleClick">毛需求计算</a-button>
-          <a-button type="primary" @click="handleClick">获取期初结余</a-button>
-          <a-button type="primary" @click="handleClick">本期在制量</a-button>
-          <a-button type="primary" @click="handleClick">工单下达</a-button>
-        </div>
-        <BaseTable id="materialTable" :data="tableData2" row-id="cProductNo" v-bind="materialTable" />
+        <BaseTable id="materialTable" :data="tableData2" :edit-config="{ trigger: 'click', mode: 'cell' }" row-id="cProductNo" v-bind="materialTable">
+          <template #buttons-left>
+            <a-button type="primary" @click="handleClick">毛需求计算</a-button>
+            <a-button type="primary" @click="handleClick">获取期初结余</a-button>
+            <a-button type="primary" @click="handleClick">本期在制量</a-button>
+            <a-button type="primary" @click="handleClick">工单下达</a-button>
+          </template>
+        </BaseTable>
       </div>
     </main>
 

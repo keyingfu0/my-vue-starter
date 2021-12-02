@@ -45,6 +45,7 @@ specifiers:
   vue-request: ^1.2.0
   vue-router: ^4.0.11
   vxe-table: ^4.1.10
+  vxe-table-plugin-antd: ^3.0.5
   xe-utils: '3'
   xlsx: ^0.17.4
 
@@ -65,6 +66,7 @@ dependencies:
   vue-request: 1.2.3_vue@3.2.22
   vue-router: 4.0.12_vue@3.2.22
   vxe-table: 4.1.10_vue@3.2.22+xe-utils@3.4.3
+  vxe-table-plugin-antd: 3.0.5_vxe-table@4.1.10
   xe-utils: 3.4.3
   xlsx: 0.17.4
 
@@ -7251,6 +7253,14 @@ packages:
       '@vue/runtime-dom': 3.2.22
       '@vue/server-renderer': 3.2.22_vue@3.2.22
       '@vue/shared': 3.2.22
+    dev: false
+
+  /vxe-table-plugin-antd/3.0.5_vxe-table@4.1.10:
+    resolution: {integrity: sha512-qZXIxNKSqdvfVncvVopId7byy9FYUW+ygX4vwUhPceHwsUq0eyX5SVX/LLafqfsnkq4l8+EZ4zQ5/xQ6AfZ31Q==}
+    peerDependencies:
+      vxe-table: ^4.0.30
+    dependencies:
+      vxe-table: 4.1.10_vue@3.2.22+xe-utils@3.4.3
     dev: false
 
   /vxe-table/4.1.10_vue@3.2.22+xe-utils@3.4.3:

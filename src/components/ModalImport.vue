@@ -59,8 +59,11 @@ const steps = [
       template: `
         <div class="mt-4 text-lg flex justify-center">
         <!--       <span @click="handleDownload">点击下载excel模板</span>-->
-        <a @click="handleDownload" href="http://47.98.59.211:6247/Content/template/ApsSalesOrderImport.xlsx"
-           download="订单导入.xlsx">点击下载订单导入模板</a>
+        <!--        TODO  link 可以换成link类型的a-button-->
+        <a type="link" @click="handleDownload"
+           href="http://47.98.59.211:6247/Content/template/ApsSalesOrderImport.xlsx"
+           download="订单导入.xlsx">点击下载订单导入模板
+        </a>
         </div>`,
       setup() {
         function handleDownload() {
