@@ -3,18 +3,21 @@
 import { computed, h, nextTick, reactive, ref, resolveComponent, shallowRef, watch } from 'vue'
 // import { Button as AButton, Tabs as Atab, TabPane } from 'ant-design-vue'
 import ImportExcel from '@/components/ImportExcel.vue'
-import { EditOutlined, QuestionCircleOutlined } from '@ant-design/icons-vue'
+import { EditOutlined, QuestionCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons-vue'
 
 import BaseTable from '@/components/BaseTable.vue'
 import ModalImport from '@/components/ModalImport.vue'
 import message from 'ant-design-vue/lib/message'
 import 'ant-design-vue/lib/message/style/index.css'
 
+import Modal from 'ant-design-vue/lib/modal'
+import 'ant-design-vue/lib/modal/style/index.css'
+
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import request from '@/utils/request'
 import useRequest, { useList } from '@/utils/useRequest'
 import { formatTime } from '@/utils/time'
-import { isArray, isObject, map, throttle } from 'lodash'
+import { forEach, isArray, isObject, map, throttle } from 'lodash'
 
 import { time } from '@/utils/time.js'
 
@@ -93,6 +96,7 @@ const weeksForQuery = computed(() => {
       tStartDateBegin: start,
       tStartDateEnd: end,
       fType: index + 1,
+      fWeekType: index,
     }
   })
 
@@ -187,7 +191,7 @@ const materialTable = {
       title: '毛需求',
     },
     {
-      field: 'fBalanceCount',
+      field: 'fbalanceCount',
       title: '期初结余',
     },
     {
@@ -427,32 +431,92 @@ async function handleDelete(row) {
 //#endregion
 
 //#region ## 物料需求计算 ==================================================
-const materialButtonStates = reactive({
-  grossDemandCalculation: {
-    loading: false,
-  },
-})
 
-async function grossDemandCalculation() {
-  const { loading } = useRequest(async () => {
-    return request('/ApsSalesOrderInfo/GrossCalculation', {
+function getService(url) {
+  return async function (args = {}) {
+    return request(url, {
       method: 'post',
       data: {
         cWeekNo: activeWeek.value.tStartDateBegin,
         ...activeWeek.value,
+        ...args,
       },
     })
-  })
-  const stop = watch(loading, (newVal, oldVal) => {
-    materialButtonStates.grossDemandCalculation.loading = newVal
-    if (oldVal && !newVal) {
-      message.success('毛需求计算成功！版本已更新')
-      materialTableRef.value.refresh()
-      stop()
+  }
+}
+
+const materialCalculating = ref(false)
+
+async function _materialCalcHandler({ service, text }) {
+  const { loading: reqLoading, error } = useRequest(service)
+  const stop = watch(reqLoading, (newVal, oldVal) => {
+    // NOTE 因为请求返回之后立即请求并不一定是最新数据, 所以在取消loading状态之前手动加一个延时防止操作过快时数据可能错误
+
+    if (newVal) {
+      materialCalculating.value = newVal
+    } else {
+      setTimeout(() => {
+        materialCalculating.value = newVal
+        if (oldVal && !error.value) {
+          message.success(`${text}成功!`)
+          materialTableRef.value.refresh()
+          // NOTE 另一种方式是在一定延时之后再次请求来获取正确数据, 但是感觉不太好
+          // setTimeout(() => {
+          //   materialTableRef.value.refresh()
+          // }, 1500)
+          stop()
+        }
+      }, 0)
     }
   })
 }
 
+// grossDemandCalculation,getTheBeginningBalance,getTheCurrentProductionVolume
+const materialCalcButtons = {
+  grossDemandCalculation: {
+    service: getService('/ApsSalesOrderInfo/GrossCalculation'),
+    text: '毛需求计算',
+    confirmConfig: {
+      _checkShouldConfirm() {
+        return materialTableRef.value.getTableDataLength !== 0
+      },
+      title: '确认重新计算毛需求吗?',
+      icon: h(ExclamationCircleOutlined),
+      content: h('div', { style: 'color:red;' }, '重新计算毛需求将会清除当前数据并生成新版本。已有的期初结余、本期在制量等数据需要重新计算。'),
+      okText: '确认',
+      cancelText: '取消',
+    },
+    // beforeClick:
+  },
+  getTheBeginningBalance: {
+    service: getService('/ApsMaterialRequestInfo/BalanceCountCalculation'),
+    text: '获取期初结余',
+  },
+  getTheCurrentProductionVolume: {
+    service: async () => {
+      await getService('/ApsMaterialRequestInfo/ProduceCountCalculation')()
+      return getService('/ApsMaterialRequestInfo/ATPCountCalculation')()
+    },
+    text: '获取本期在制量和ATP',
+  },
+}
+
+forEach(materialCalcButtons, (button) => {
+  button.handler = () => {
+    // button.beforeClick &&
+    const { confirmConfig } = button
+    if (confirmConfig && confirmConfig._checkShouldConfirm()) {
+      Modal.confirm({ ...confirmConfig, onOk: () => _materialCalcHandler(button) })
+      return
+    }
+    return _materialCalcHandler(button)
+  }
+})
+
+//#endregion
+
+//#region ## 表格重新加载中 ==================================================
+const materialTableReloading = ref(false)
 //#endregion
 </script>
 
@@ -525,58 +589,68 @@ async function grossDemandCalculation() {
       </BaseTable>
 
       <!--    毛需求计算 -->
-      <a-divider />
-      <h2 class="font-bold text-lg">物料需求清单</h2>
-      <div class="mt-4">
-        <BaseTable
-          id="materialTable"
-          ref="materialTableRef"
-          :edit-config="{ trigger: 'click', mode: 'cell' }"
-          has-pager
-          row-id="cProductNo"
-          v-bind="materialTable"
-        >
-          <template #buttons-left>
-            <a-tooltip placement="top">
-              <template v-if="activeKey === '0'" #title>
-                <span>请先排产订单,然后选择相应周次计算</span>
-              </template>
-              <a-button :disabled="activeKey === '0'" :loading="materialButtonStates.grossDemandCalculation.loading" @click="grossDemandCalculation"
-                >毛需求计算
-                <QuestionCircleOutlined v-show="activeKey === '0'" class="-translate-y-1 text-gray-500" />
+      <div v-show="activeKey !== '0'">
+        <a-divider />
+        <h2 class="font-bold text-lg">物料需求清单</h2>
+        <div class="mt-4">
+          <BaseTable
+            id="materialTable"
+            ref="materialTableRef"
+            v-model:reloading="materialTableReloading"
+            :edit-config="{ trigger: 'click', mode: 'cell' }"
+            has-pager
+            row-id="cProductNo"
+            v-bind="materialTable"
+          >
+            <template #buttons-left>
+              <!--              <a-tooltip placement="top">-->
+              <!--                <template v-if="activeKey === '0'" #title>-->
+              <!--                  <span>请先排产订单,然后选择相应周次计算</span>-->
+              <!--                </template>-->
+              <!--                <a-button :disabled="activeKey === '0'" :loading="materialButtonStates.grossDemandCalculation.loading" @click="grossDemandCalculation"-->
+              <!--                  >毛需求计算-->
+              <!--                  <QuestionCircleOutlined v-show="activeKey === '0'" class="-translate-y-1 text-gray-500" />-->
+              <!--                </a-button>-->
+              <!--              </a-tooltip>-->
+              <!--              <a-tooltip placement="top">-->
+              <!--                <template v-if="activeKey === '0'" #title>-->
+              <!--                  <span>请先排产订单,然后选择相应周次计算</span>-->
+              <!--                </template>-->
+              <!--                <a-button :disabled="activeKey === '0'" @click="grossDemandCalculation"-->
+              <!--                  >获取期初结余-->
+              <!--                  <QuestionCircleOutlined v-show="activeKey === '0'" class="-translate-y-1 text-gray-500" />-->
+              <!--                </a-button>-->
+              <!--              </a-tooltip>-->
+              <!--              <a-tooltip placement="top">-->
+              <!--                <template v-if="activeKey === '0'" #title>-->
+              <!--                  <span>请先排产订单,然后选择相应周次计算</span>-->
+              <!--                </template>-->
+              <!--                <a-button :disabled="activeKey === '0'" @click="grossDemandCalculation"-->
+              <!--                  >本期在制量-->
+              <!--                  <QuestionCircleOutlined v-show="activeKey === '0'" class="-translate-y-1 text-gray-500" />-->
+              <!--                </a-button>-->
+              <!--              </a-tooltip>-->
+              <a-button
+                v-for="button in materialCalcButtons"
+                :key="button.text"
+                :loading="materialCalculating || materialTableReloading"
+                @click="button.handler"
+                >{{ button.text }}
               </a-button>
-            </a-tooltip>
-            <a-tooltip placement="top">
-              <template v-if="activeKey === '0'" #title>
-                <span>请先排产订单,然后选择相应周次计算</span>
-              </template>
-              <a-button :disabled="activeKey === '0'" @click="grossDemandCalculation"
-                >获取期初结余
-                <QuestionCircleOutlined v-show="activeKey === '0'" class="-translate-y-1 text-gray-500" />
-              </a-button>
-            </a-tooltip>
-            <a-tooltip placement="top">
-              <template v-if="activeKey === '0'" #title>
-                <span>请先排产订单,然后选择相应周次计算</span>
-              </template>
-              <a-button :disabled="activeKey === '0'" @click="grossDemandCalculation"
-                >本期在制量
-                <QuestionCircleOutlined v-show="activeKey === '0'" class="-translate-y-1 text-gray-500" />
-              </a-button>
-            </a-tooltip>
-            <a-popconfirm
-              :visible="isWorkOrderReleaseConfirmVisible"
-              cancel-text="取消"
-              ok-text="确认"
-              title="确认下达工单?"
-              @visibleChange="handleVisibleChange"
-            >
-              <a-button>工单下达</a-button>
-            </a-popconfirm>
-            <!--             TODO 需要提示-->
-            <a-button>工单导出</a-button>
-          </template>
-        </BaseTable>
+              <a-popconfirm
+                :visible="isWorkOrderReleaseConfirmVisible"
+                cancel-text="取消"
+                ok-text="确认"
+                title="确认下达工单?"
+                @visibleChange="handleVisibleChange"
+              >
+                <a-button>工单下达</a-button>
+              </a-popconfirm>
+              <!--             TODO 需要提示-->
+              <a-button>工单导出</a-button>
+            </template>
+          </BaseTable>
+        </div>
       </div>
     </main>
 

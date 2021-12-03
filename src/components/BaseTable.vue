@@ -42,9 +42,13 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  reloading: {
+    type: Boolean,
+    default: false,
+  },
 })
 
-const emit = defineEmits(['refreshed'])
+const emit = defineEmits(['refreshed', 'update:reloading'])
 
 //#region ## 表格工具栏 ==================================================
 const table = ref()
@@ -78,10 +82,17 @@ const columns = () => {
 
 //#region ## 数据请求 ==================================================
 
-const { data = [], loading, current, total, pageSize, refresh, changePagination } = props.requestConfig
+const { data = [], loading, current, total, pageSize, refresh, changePagination, reloading } = props.requestConfig
   ? useList.$preset(['loading-delay'])(...props.requestConfig)
   : {}
 console.log('-> total', total)
+
+// sync reloading
+if (props.reloading) {
+  watch(reloading, (val) => {
+    emit('update:reloading', val)
+  })
+}
 // const {data, refresh} = useRequest(...props.requestConfig)
 // useRequest(()=>{
 //   return
@@ -159,10 +170,18 @@ async function refreshTableData() {
 
 //#endregion
 
+//#region ## 获取数据长度 ==================================================
+function getTableDataLength() {
+  return data.value.length
+}
+
+//#endregion
+
 defineExpose({
   getSelectedRows,
   refresh: refreshTableData,
   handleDelete,
+  getTableDataLength,
 })
 </script>
 
