@@ -78,7 +78,9 @@ const columns = () => {
 
 //#region ## 数据请求 ==================================================
 
-const { data = [], loading, current, total, pageSize, refresh, changePagination } = props.requestConfig ? useList(...props.requestConfig) : {}
+const { data = [], loading, current, total, pageSize, refresh, changePagination } = props.requestConfig
+  ? useList.$preset(['loading-delay'])(...props.requestConfig)
+  : {}
 console.log('-> total', total)
 // const {data, refresh} = useRequest(...props.requestConfig)
 // useRequest(()=>{

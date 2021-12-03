@@ -3,7 +3,7 @@
 import { computed, h, nextTick, reactive, ref, resolveComponent, shallowRef, watch } from 'vue'
 // import { Button as AButton, Tabs as Atab, TabPane } from 'ant-design-vue'
 import ImportExcel from '@/components/ImportExcel.vue'
-import { EditOutlined } from '@ant-design/icons-vue'
+import { EditOutlined, QuestionCircleOutlined } from '@ant-design/icons-vue'
 
 import BaseTable from '@/components/BaseTable.vue'
 import ModalImport from '@/components/ModalImport.vue'
@@ -14,7 +14,7 @@ import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import request from '@/utils/request'
 import useRequest, { useList } from '@/utils/useRequest'
 import { formatTime } from '@/utils/time'
-import { isArray, isObject, map } from 'lodash'
+import { isArray, isObject, map, throttle } from 'lodash'
 
 import { time } from '@/utils/time.js'
 
@@ -35,9 +35,11 @@ const activeKey = ref('0')
 
 const now = shallowRef(time())
 
-function getNow() {
+function _getNow() {
   now.value = time()
 }
+
+const getNow = throttle(_getNow, 1000)
 
 const weeks = computed(() => {
   // const start = now.value.startOf('week').add(-1, 'day')
@@ -96,11 +98,15 @@ const weeksForQuery = computed(() => {
 
   return [{ fType: 0 }, ...ret]
 })
+const activeWeek = computed(() => {
+  return weeksForQuery.value[activeKey.value]
+})
 
 // refresh table data on activeKey change
 watch(activeKey, (newVal, oldVal) => {
   if (newVal !== oldVal) {
     salesOrderTableRef.value.refresh()
+    materialTableRef.value.refresh()
   }
 })
 
@@ -153,7 +159,7 @@ const salesOrderTable = {
         method: 'post',
         data: {
           ...params,
-          ...weeksForQuery.value[activeKey.value],
+          ...activeWeek.value,
         },
       })
     },
@@ -277,59 +283,16 @@ const materialTable = {
     },
   ],
   requestConfig: [
-    async () => {
-      return {
-        Content: {
-          List: [
-            {
-              cWeekNo: '2021第21周(11.22~11.28)',
-              cProductNo: '001',
-              cProductName: '300',
-              fGrossCount: '200',
-              fBalanceCount: '100',
-              fProduceCount: '100',
-              fATPCount: '10',
-              OrderList: [
-                {
-                  cProductionOrderNo: 'cs1201',
-                  fIsReleaseOrder: 0,
-                  label: 'cs1201',
-                  value: 'cs1201',
-                },
-              ],
-              OrderListVal: ['cs1201', '20211101'],
-              cRelateNo: 'cs1201,20211101',
-              fVersion: '2',
-            },
-            {
-              cWeekNo: '2021第21周(11.22~11.28)',
-              cProductNo: '002',
-              cProductName: '300',
-              fGrossCount: '200',
-              fBalanceCount: '100',
-              fProduceCount: '100',
-              fATPCount: '10',
-              OrderList: [
-                {
-                  cProductionOrderNo: 'cs1201',
-                  fIsReleaseOrder: 0,
-                  label: 'cs1201',
-                  value: 'cs1201',
-                },
-                {
-                  cProductionOrderNo: '20211101',
-                  fIsReleaseOrder: 1,
-                  label: '20211101',
-                  value: '20211101',
-                },
-              ],
-              OrderListVal: ['cs1201', '20211101'],
-              cRelateNo: 'cs1201,20211101',
-              fVersion: '2',
-            },
-          ],
+    async (params) => {
+      getNow()
+
+      return request('/ApsMaterialRequestInfo/GetApsMaterialRequestInfoPageList', {
+        method: 'post',
+        data: {
+          ...params,
+          ...activeWeek.value,
         },
-      }
+      })
     },
   ],
 }
@@ -462,6 +425,35 @@ async function handleDelete(row) {
 }
 
 //#endregion
+
+//#region ## 物料需求计算 ==================================================
+const materialButtonStates = reactive({
+  grossDemandCalculation: {
+    loading: false,
+  },
+})
+
+async function grossDemandCalculation() {
+  const { loading } = useRequest(async () => {
+    return request('/ApsSalesOrderInfo/GrossCalculation', {
+      method: 'post',
+      data: {
+        cWeekNo: activeWeek.value.tStartDateBegin,
+        ...activeWeek.value,
+      },
+    })
+  })
+  const stop = watch(loading, (newVal, oldVal) => {
+    materialButtonStates.grossDemandCalculation.loading = newVal
+    if (oldVal && !newVal) {
+      message.success('毛需求计算成功！版本已更新')
+      materialTableRef.value.refresh()
+      stop()
+    }
+  })
+}
+
+//#endregion
 </script>
 
 <template>
@@ -523,7 +515,7 @@ async function handleDelete(row) {
             </template>
           </vxe-column>
           <vxe-column field="cRelateNo" show-overflow="tooltip" title="关联组装单"></vxe-column>
-          <vxe-column field="fStatus" show-overflow="tooltip" title="是否结案"></vxe-column>
+          <!--          <vxe-column field="fStatus" show-overflow="tooltip" title="是否结案"></vxe-column>-->
           <vxe-column v-slot="{ row }" show-overflow="tooltip" title="操作">
             <a-popconfirm cancel-text="取消" ok-text="确认" title="确认删除?" @confirm="handleDelete(row)">
               <a-button danger type="text"> 删除</a-button>
@@ -545,9 +537,33 @@ async function handleDelete(row) {
           v-bind="materialTable"
         >
           <template #buttons-left>
-            <a-button @click="handleClick">毛需求计算</a-button>
-            <a-button @click="handleClick">获取期初结余</a-button>
-            <a-button @click="handleClick">本期在制量</a-button>
+            <a-tooltip placement="top">
+              <template v-if="activeKey === '0'" #title>
+                <span>请先排产订单,然后选择相应周次计算</span>
+              </template>
+              <a-button :disabled="activeKey === '0'" :loading="materialButtonStates.grossDemandCalculation.loading" @click="grossDemandCalculation"
+                >毛需求计算
+                <QuestionCircleOutlined v-show="activeKey === '0'" class="-translate-y-1 text-gray-500" />
+              </a-button>
+            </a-tooltip>
+            <a-tooltip placement="top">
+              <template v-if="activeKey === '0'" #title>
+                <span>请先排产订单,然后选择相应周次计算</span>
+              </template>
+              <a-button :disabled="activeKey === '0'" @click="grossDemandCalculation"
+                >获取期初结余
+                <QuestionCircleOutlined v-show="activeKey === '0'" class="-translate-y-1 text-gray-500" />
+              </a-button>
+            </a-tooltip>
+            <a-tooltip placement="top">
+              <template v-if="activeKey === '0'" #title>
+                <span>请先排产订单,然后选择相应周次计算</span>
+              </template>
+              <a-button :disabled="activeKey === '0'" @click="grossDemandCalculation"
+                >本期在制量
+                <QuestionCircleOutlined v-show="activeKey === '0'" class="-translate-y-1 text-gray-500" />
+              </a-button>
+            </a-tooltip>
             <a-popconfirm
               :visible="isWorkOrderReleaseConfirmVisible"
               cancel-text="取消"

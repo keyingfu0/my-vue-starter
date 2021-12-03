@@ -164,7 +164,7 @@ const presets = {
   // },
 
   // 复合定义
-  default: ['message-on-success', 'get-content', 'loading-delay'],
+  default: ['message-on-success', 'get-content'],
   'is-list': {
     isList: true,
     pagination: {
