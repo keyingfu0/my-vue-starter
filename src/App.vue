@@ -206,6 +206,8 @@ const materialTable = {
       field: 'OrderList',
       title: '关联工单',
       editRender: {
+        // TODO 无效 因为有default slot
+        placeholder: '请选择关联工单',
         // name: 'ASelect',
         // options: [
         //   {
@@ -235,7 +237,7 @@ const materialTable = {
                   label-in-value
                   mode="multiple"
                   style="width: 100%"
-                  placeholder="请选择工单"
+                  placeholder="请选择关联工单"
                   option-label-prop="label"
                 >
                 <a-select-option v-for="option in options" :key="option.cProductionOrderNo"
@@ -269,9 +271,11 @@ const materialTable = {
             null,
             // row.OrderListVal,
             [
-              row.OrderList.map((item) => {
-                return item.label
-              }).join(','),
+              row.OrderList.length
+                ? row.OrderList.map((item) => {
+                    return item.label
+                  }).join(',')
+                : h('span', { class: 'text-gray-300' }, '请选择关联工单'),
               // row.cRelateNo,
               h(EditOutlined, {
                 class: '-translate-y-0.5 text-green-400 ml-2',
@@ -466,7 +470,7 @@ async function _materialCalcHandler({ service, text }) {
           // }, 1500)
           stop()
         }
-      }, 0)
+      }, 1500)
     }
   })
 }
@@ -565,17 +569,24 @@ const materialTableReloading = ref(false)
           <vxe-column field="cCustomerName" show-overflow="tooltip" title="客户名"></vxe-column>
           <vxe-column field="fCount" show-overflow="tooltip" title="数量"></vxe-column>
           <!--        :edit-render="{ name: 'ADatePicker' }"-->
-          <vxe-column :edit-render="{}" field="tProduceBeginDate" show-overflow="tooltip" title="组装开始时间">
+          <!--           TODO 无效因为有default slot-->
+          <vxe-column :edit-render="{ placeholder: '请选择组装日期' }" field="tProduceBeginDate" show-overflow="tooltip" title="组装开始时间">
             <template #default="{ row }">
-              <span>
-                {{ formatTime(row.tProduceBeginDate) }}
-              </span>
+              <tempalte v-if="row.tProduceBeginDate">
+                <span>
+                  {{ formatTime(row.tProduceBeginDate) }}
+                </span>
+              </tempalte>
+              <template v-else>
+                <span class="text-gray-300">请选择组装日期</span>
+              </template>
+
               <EditOutlined class="-translate-y-0.5 text-green-400 ml-2" />
             </template>
             <template #edit="{ row, column }">
               <!--  ? ant-design-vue的update和change事件均无效, 不知道原因... -->
               <!--                      <a-date-picker :value="dayjs(row.tProduceBeginDate)" @update:value="log" />-->
-              <vxe-input v-model="row.tProduceBeginDate" placeholder="请选择日期" transfer type="date" @change="handleCellChange(row, column)"></vxe-input>
+              <vxe-input v-model="row.tProduceBeginDate" placeholder="请选择组装日期" transfer type="date" @change="handleCellChange(row, column)"></vxe-input>
             </template>
           </vxe-column>
           <vxe-column field="cRelateNo" show-overflow="tooltip" title="关联组装单"></vxe-column>
