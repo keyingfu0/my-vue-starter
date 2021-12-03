@@ -44,6 +44,8 @@ const props = defineProps({
   },
 })
 
+const emit = defineEmits(['refreshed'])
+
 //#region ## 表格工具栏 ==================================================
 const table = ref()
 const toolbar = ref()
@@ -149,6 +151,8 @@ async function refreshTableData() {
   //  ? 有bug, 奇怪的需要手动清除选择,不然无法取消选择状态
   table.value.clearCheckboxRow()
   selectedRows.value = []
+  // props.refreshed && props.refreshed()
+  emit('refreshed')
 }
 
 //#endregion

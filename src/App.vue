@@ -1,6 +1,6 @@
 <script setup>
 // noinspection ES6UnusedImports
-import { h, nextTick, reactive, ref, resolveComponent, shallowRef, watch } from 'vue'
+import { computed, h, nextTick, reactive, ref, resolveComponent, shallowRef, watch } from 'vue'
 // import { Button as AButton, Tabs as Atab, TabPane } from 'ant-design-vue'
 import ImportExcel from '@/components/ImportExcel.vue'
 import { EditOutlined } from '@ant-design/icons-vue'
@@ -11,14 +11,12 @@ import message from 'ant-design-vue/lib/message'
 import 'ant-design-vue/lib/message/style/index.css'
 
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
-import dayjs from 'dayjs'
-import 'dayjs/locale/zh-cn'
 import request from '@/utils/request'
 import useRequest, { useList } from '@/utils/useRequest'
 import { formatTime } from '@/utils/time'
 import { isArray, isObject, map } from 'lodash'
 
-dayjs.locale('zh-cn')
+import { time } from '@/utils/time.js'
 
 // const tableData = ref()
 
@@ -32,7 +30,99 @@ function selectAllChangeEvent() {}
 
 function selectChangeEvent() {}
 
+//#region ## 请求的时间参数 ==================================================
 const activeKey = ref('0')
+
+const now = shallowRef(time())
+
+function getNow() {
+  now.value = time()
+}
+
+const weeks = computed(() => {
+  // const start = now.value.startOf('week').add(-1, 'day')
+  const start = now.value.startOf('week')
+  // const end = now.value.endOf('week').add(1, 'day')
+  const end = now.value.endOf('week')
+  const currentWeek = {
+    start: start.format('YYYY-MM-DD HH:mm:ss'),
+    end: end.format('YYYY-MM-DD HH:mm:ss'),
+  }
+
+  const nextWeeks = [1, 2].map((num) => {
+    return {
+      start: start.add(num, 'week').format('YYYY-MM-DD HH:mm:ss'),
+      end: end.add(num, 'week').format('YYYY-MM-DD HH:mm:ss'),
+    }
+  })
+  //  [{start:,end:},{start: ,end:},{}]
+  return [currentWeek, ...nextWeeks]
+})
+
+/**
+ * 用于查询的周时间参数
+ * @type {ComputedRef<[{fType: number}, ...{tStartDateBegin: any, tStartDateEnd: any, fType}[]]>}
+ * @example
+ * [
+ {
+        "fType": 0
+    },
+ {
+        "tStartDateBegin": "2021-11-28 00:00:00",
+        "tStartDateEnd": "2021-12-06 23:59:59",
+        "fType": 1
+    },
+ {
+        "tStartDateBegin": "2021-12-05 00:00:00",
+        "tStartDateEnd": "2021-12-13 23:59:59",
+        "fType": 2
+    },
+ {
+        "tStartDateBegin": "2021-12-12 00:00:00",
+        "tStartDateEnd": "2021-12-20 23:59:59",
+        "fType": 3
+    }
+ ]
+ */
+const weeksForQuery = computed(() => {
+  const ret = weeks.value.map((week, index) => {
+    const { start, end } = week
+    return {
+      tStartDateBegin: start,
+      tStartDateEnd: end,
+      fType: index + 1,
+    }
+  })
+
+  return [{ fType: 0 }, ...ret]
+})
+
+// refresh table data on activeKey change
+watch(activeKey, (newVal, oldVal) => {
+  if (newVal !== oldVal) {
+    salesOrderTableRef.value.refresh()
+  }
+})
+
+console.log('-> weeks', weeks)
+console.log('-> weeksForQuery', weeksForQuery)
+
+/**
+ * using dayjs get current week and next week
+ */
+// const getCurrentWeek = function() {
+//   const now = time()
+//   const start = now.startOf('week').add(-1, 'day')
+//   const end = now.endOf('week').add(1, 'day')
+//   return {
+//     start: start.format('YYYY-MM-DD HH:mm:ss'),
+//     end: end.format('YYYY-MM-DD HH:mm:ss'),
+//     week: week,
+//     year: year
+//   }
+// }
+
+//#endregion
 
 //#region ## 导入数据 ==================================================
 
@@ -57,10 +147,13 @@ async function finishImport() {
 const salesOrderTable = {
   requestConfig: [
     async (params) => {
+      getNow()
+
       return request('/ApsSalesOrderInfo/GetApsSalesOrderInfoPageList', {
         method: 'post',
         data: {
           ...params,
+          ...weeksForQuery.value[activeKey.value],
         },
       })
     },
@@ -292,6 +385,11 @@ const cellStyle = ({ row, column }) => {
   }
 }
 
+// 任意刷新之后取消编辑状态
+function refreshed() {
+  hasEdit.value = false
+}
+
 //#endregion
 
 //#region ## 表格工具栏 ==================================================
@@ -387,12 +485,14 @@ async function handleDelete(row) {
         :edit-config="{ trigger: 'click', mode: 'cell' }"
         has-pager
         v-bind="salesOrderTable"
+        @refreshed="refreshed"
       >
         <template #buttons-left>
           <a-button @click="showModal">excel导入</a-button>
           <a-button @click="handleStoreUniformityCheck">仓库齐套性检测</a-button>
           <a-button @click="handleClick">打印组装单</a-button>
           <a-button @click="handleStoreUniformityCheck">ATP齐套性检测</a-button>
+          <a-button @click="handleStoreUniformityCheck">结案</a-button>
         </template>
         <template #buttons-right>
           <a-button v-show="hasEdit" type="primary" @click="saveTable">保存编辑</a-button>
