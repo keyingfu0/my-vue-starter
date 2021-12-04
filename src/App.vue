@@ -21,6 +21,8 @@ import { forEach, isArray, isObject, map, throttle } from 'lodash'
 
 import { time } from '@/utils/time.js'
 
+import SelectWorkOrder from '@/components/SelectWorkOrder.vue'
+
 // const tableData = ref()
 
 // const tableData2 = reactive()
@@ -29,9 +31,16 @@ function handleClick() {
   // tableData.value[0].name = '测试'
 }
 
-function selectAllChangeEvent() {}
-
-function selectChangeEvent() {}
+// 编辑后改变单元格样式
+const cellStyle = ({ row, column }) => {
+  if (column.property === 'tProduceBeginDate' || column.property === 'OrderList') {
+    if (row._hasEdit) {
+      return {
+        backgroundColor: 'lightblue',
+      }
+    }
+  }
+}
 
 //#region ## 请求的时间参数 ==================================================
 const activeKey = ref('0')
@@ -171,6 +180,7 @@ const salesOrderTable = {
   deleteConfig: {
     handler: _handleDelete,
   },
+  cellStyle,
 }
 
 //#endregion
@@ -228,43 +238,9 @@ const materialTable = {
       //   </vxe-select>
       // </template>
       slots: {
-        edit: (props) =>
-          h(
-            {
-              template: `
-                <a-select
-                  v-model:value="row.OrderList"
-                  label-in-value
-                  mode="multiple"
-                  style="width: 100%"
-                  placeholder="请选择关联工单"
-                  option-label-prop="label"
-                >
-                <a-select-option v-for="option in options" :key="option.cProductionOrderNo"
-                                 :value="option.cProductionOrderNo" :label="option.cProductionOrderNo">
-                  {{ option.cProductionOrderNo }}
-                </a-select-option>
-
-                </a-select>`,
-              components: {},
-              props: ['row'],
-              setup() {
-                return {
-                  options: [
-                    {
-                      cProductionOrderNo: 'cs1201',
-                    },
-                    {
-                      cProductionOrderNo: '20211101',
-                    },
-                  ],
-                }
-              },
-            },
-            {
-              row: props.row,
-            },
-          ),
+        edit: (props) => {
+          return h(SelectWorkOrder, { row: props.row, activeWeek: activeWeek.value })
+        },
         default: ({ row }) => {
           return h(
             'div',
@@ -303,6 +279,7 @@ const materialTable = {
       })
     },
   ],
+  cellStyle,
 }
 
 //#endregion
@@ -345,17 +322,6 @@ function resetTable() {
   salesOrderTableRef.value.refresh()
 }
 
-// 编辑后改变单元格样式
-const cellStyle = ({ row, column }) => {
-  if (column.property === 'tProduceBeginDate') {
-    if (row._hasEdit) {
-      return {
-        backgroundColor: 'lightblue',
-      }
-    }
-  }
-}
-
 // 任意刷新之后取消编辑状态
 function refreshed() {
   hasEdit.value = false
@@ -365,22 +331,6 @@ function refreshed() {
 
 //#region ## 表格工具栏 ==================================================
 const salesOrderTableRef = ref()
-
-//#endregion
-
-//#region ## 订单表格单选 ==================================================
-// const selectRow = shallowRef()
-
-function getSelectedRows(tableRef) {
-  const selectedRows = tableRef.value.getCheckboxRecords()
-  console.log('-> selectedRows', selectedRows)
-  if (!selectedRows.length) {
-    message.warning('未选中数据!')
-    return null
-  }
-
-  return selectedRows
-}
 
 //#endregion
 
@@ -522,6 +472,10 @@ forEach(materialCalcButtons, (button) => {
 //#region ## 表格重新加载中 ==================================================
 const materialTableReloading = ref(false)
 //#endregion
+
+//#region ## 关联工单 ==================================================
+
+//#endregion
 </script>
 
 <template>
@@ -541,7 +495,6 @@ const materialTableReloading = ref(false)
       <BaseTable
         id="salesOrderTableRef"
         ref="salesOrderTableRef"
-        :cell-style="cellStyle"
         :edit-config="{ trigger: 'click', mode: 'cell' }"
         has-pager
         v-bind="salesOrderTable"
