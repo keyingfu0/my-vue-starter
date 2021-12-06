@@ -14,7 +14,7 @@ import 'ant-design-vue/lib/modal/style/index.css'
 
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import request from '@/utils/request'
-import useRequest from '@/utils/useRequest'
+import useRequest, { onFormatResultPipe } from '@/utils/useRequest'
 import { formatTime } from '@/utils/time'
 import { flatten, forEach, map, throttle } from 'lodash'
 
@@ -167,7 +167,7 @@ async function finishImport() {
 
 function getIds(tableRef) {
   const selectedRows = tableRef.value.getSelectedRows()
-  return selectedRows.map((item) => {
+  return selectedRows?.map((item) => {
     return item.id
   })
 }
@@ -234,6 +234,7 @@ const materialTable = {
     {
       field: 'OrderList',
       title: '关联工单',
+      showOverflow: undefined,
       editRender: {
         // TODO 无效 因为有default slot
         placeholder: '请选择关联工单',
@@ -268,7 +269,7 @@ const materialTable = {
                     console.log('-> item', item)
                     const { label, fPlanningCount, fIsReleaseOrder } = item
                     const statusText = fIsReleaseOrder ? '，已下达' : '，未下达'
-                    return `${label}（${fPlanningCount}件${statusText}）`
+                    return `${label}（${fPlanningCount}件${statusText}）\n`
                   }).join(',')
                 : h('span', { class: 'text-gray-300' }, '请选择关联工单'),
               // row.cRelateNo,
@@ -505,7 +506,6 @@ const storeAtpCheckTable = {
 }
 
 //#endregion
-caseClosed
 
 //#region ## 结案 ==================================================
 // TODO 重构提取
@@ -537,7 +537,9 @@ async function caseClosed() {
     async () => {
       return request('/ApsSalesOrderInfo/FinishApsSalesOrderInfoIDS', {
         method: 'POST',
-        data: {},
+        data: {
+          ids: selectedRows.map(({ id }) => id),
+        },
       })
     },
     {
@@ -610,6 +612,191 @@ async function workOrderRelease() {
       },
     },
   )
+}
+
+//#endregion
+
+//#region ## 生成组装单 ==================================================
+const visibleAssemblyOrderModal = ref(false)
+const assemblyOrder = ref()
+const assemblyOrder2 = ref()
+let currentRow
+
+// 简易缓存
+// TODO NOTE  这里做了一个2秒钟的建议缓存, 原因是因为2个列表请求的是同一接口并同时返回了2个列表的数据, 但table设计时是table内部直接请求的, 为了防止2个table内部重复请求, 在请求时检查一下之前请求缓存, 以后看看有没有更好的方式(直接在外部改data,loading的数据?)
+const cacheResult = new Map()
+
+function generateAssemblyOrder() {
+  const selectedRows = salesOrderTableRef.value.getSelectedRows()
+  if (!selectedRows) {
+    return
+  }
+  useRequest(
+    async () => {
+      const ids = getIds(salesOrderTableRef)
+      return request('/ApsAssembleOrderInfo/AddApsAssembleOrderInfoModelWithSalesOrderNo', {
+        method: 'POST',
+        data: {
+          cApsSalesOrderIds: ids,
+        },
+      })
+    },
+    {
+      onSuccess() {
+        message.success('生成组装单成功!点击单元格查看详情')
+        salesOrderTableRef.value.refresh()
+      },
+    },
+  )
+}
+
+async function showAssociatedAssemblyOrder(row) {
+  currentRow = row
+  visibleAssemblyOrderModal.value = true
+  await nextTick()
+
+  // 等待可能的缓存
+  await assemblyOrder2.value.fetchData(row)
+  // setTimeout(() => {
+  assemblyOrder.value.fetchData(row)
+  // }, 50)
+}
+
+// TODO 加一个tab, 筛选功能
+
+async function assemblyOrderReq(row) {
+  console.log('-> Fanny row', row)
+
+  console.log('-> cacheResult', cacheResult)
+  // 检查缓存
+  if (cacheResult.has(row.cRelateNo)) {
+    return cacheResult.get(row.cRelateNo)
+  }
+  // TODO 放到表格组件内部
+  // cacheResult.set(row.cRelateNo, '_placeholder')
+  const res = await request('/ApsAssembleOrderInfo/GetApsAssembleOrderInfoDetailModel', {
+    method: 'POST',
+    data: {
+      cApsAssembleOrderNo: row.cRelateNo,
+      ...activeWeek.value,
+    },
+  })
+
+  // 设置并定时清除缓存
+  cacheResult.set(row.cRelateNo, res)
+  setTimeout(() => {
+    cacheResult.delete(row.cRelateNo)
+  }, 2 * 1000)
+
+  return res
+}
+
+const assemblyOrderTable = {
+  hasToolbar: false,
+  columnSchema: [
+    {
+      field: 'cProductName',
+      title: '零部件名字',
+      showOverflow: undefined,
+    },
+    {
+      field: 'fGrossCount',
+      title: '毛需求',
+    },
+    {
+      field: 'fbalanceCount',
+      title: '期初结余',
+    },
+    {
+      field: 'fProduceCount',
+      title: '本周在制量',
+    },
+    {
+      field: 'fATPCount',
+      title: 'ATP',
+    },
+  ],
+  customPreset: ['initial-empty-list'],
+  requestConfig: [
+    assemblyOrderReq,
+    {
+      manual: true,
+      // cacheKey: 'assembly',
+      // get cacheKey() {
+      //   console.log('-> currentRow?.cRelateNo', currentRow?.cRelateNo)
+      //   return currentRow?.cRelateNo ?? '_undefined'
+      // },
+      setup() {
+        onFormatResultPipe((data) => {
+          console.log('-> data', data)
+          return {
+            List: data.MaterialRequestList,
+          }
+        })
+      },
+    },
+  ],
+}
+
+const assemblyOrderTable2 = {
+  hasToolbar: false,
+  columnSchema: [
+    {
+      field: 'cProductNo',
+      title: '物料编码',
+    },
+    {
+      field: 'cCustomerName',
+      title: '客户名',
+    },
+    {
+      field: 'fCount',
+      title: '数量',
+    },
+    {
+      field: 'tProduceBeginDate',
+      title: '组装日期',
+      formatter: 'formatDate',
+    },
+  ],
+  customPreset: ['initial-empty-list'],
+  requestConfig: [
+    assemblyOrderReq,
+    {
+      manual: true,
+      // cacheKey: 'assembly',
+      // cacheTime: 10 * 1000,
+      setup() {
+        onFormatResultPipe((data) => {
+          return {
+            List: data.SalesOrderList,
+          }
+        })
+      },
+    },
+  ],
+}
+const assemblyOrderLists = shallowRef()
+
+function print() {
+  console.log('-> assemblyOrderLists', assemblyOrderLists)
+  const content = assemblyOrderLists.value.innerHTML
+  salesOrderTableRef.value.print({
+    sheetName: `${currentRow.cRelateNo} 组装单`,
+    content,
+    style: `
+      .vxe-table--empty-block {
+      display: none;
+      }
+      .vxe-table--empty-placeholder {
+       display: none;
+      }
+      .text-center {
+       text-align: center;
+      }
+    `,
+    // style: printStyle,
+  })
 }
 
 //#endregion
@@ -743,7 +930,7 @@ const materialTableReloading = ref(false)
         <template #buttons-left>
           <a-button @click="showModal">excel导入</a-button>
           <a-button @click="handleStoreUniformityCheck">仓库齐套性检测</a-button>
-          <a-button @click="handleClick">打印组装单</a-button>
+          <a-button @click="generateAssemblyOrder">生成组装单</a-button>
           <a-button @click="handleStoreAtpCheck">ATP齐套性检测</a-button>
           <a-popconfirm
             :visible="isCaseCloseConfirmVisible"
@@ -791,7 +978,9 @@ const materialTableReloading = ref(false)
               <vxe-input v-model="row.tProduceBeginDate" placeholder="请选择组装日期" transfer type="date" @change="handleCellChange(row, column)"></vxe-input>
             </template>
           </vxe-column>
-          <vxe-column field="cRelateNo" show-overflow="tooltip" title="关联组装单"></vxe-column>
+          <vxe-column v-slot="{ row }" field="cRelateNo" show-overflow="tooltip" title="关联组装单">
+            <a-button type="link" @click="showAssociatedAssemblyOrder(row)">{{ row.cRelateNo }}</a-button>
+          </vxe-column>
           <!--          <vxe-column field="fStatus" show-overflow="tooltip" title="是否结案"></vxe-column>-->
           <vxe-column v-slot="{ row }" show-overflow="tooltip" title="操作">
             <a-popconfirm cancel-text="取消" ok-text="确认" title="确认删除?" @confirm="handleDelete(row)">
@@ -859,6 +1048,17 @@ const materialTableReloading = ref(false)
     <a-modal v-model:visible="visibleCheckAtpModal" class="flex justify-center" :footer="null" title="ATP齐套性检测" width="auto">
       <div class="min-w-[1200px]">
         <BaseTable id="storeAtpCheck" ref="storeAtpCheck" :has-checkbox="false" row-id="cProductNo" v-bind="storeAtpCheckTable" />
+      </div>
+    </a-modal>
+    <!--    关联组装单 -->
+    <a-modal v-model:visible="visibleAssemblyOrderModal" class="flex justify-center" :footer="null" title="关联组装单" width="auto">
+      <a-button @click="print">打印组装单</a-button>
+      <div ref="assemblyOrderLists" class="min-w-[1200px]">
+        <h2 class="font-bold text-2xl mt-4 text-center">订单列表</h2>
+        <BaseTable id="assemblyOrder2" ref="assemblyOrder2" :has-checkbox="false" row-id="cProductNo" v-bind="assemblyOrderTable2"></BaseTable>
+        <h2 class="font-bold text-2xl mt-4 text-center">物料需求列表</h2>
+        <BaseTable id="assemblyOrder" ref="assemblyOrder" :has-checkbox="false" row-id="cProductNo" v-bind="assemblyOrderTable"></BaseTable>
+        <!--        <BaseTable id="assemblyOrder2" ref="assemblyOrder2" :has-checkbox="false" row-id="cProductNo" v-bind="assemblyOrderTable2" />-->
       </div>
     </a-modal>
   </a-config-provider>

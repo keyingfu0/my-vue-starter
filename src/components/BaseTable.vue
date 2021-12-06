@@ -25,7 +25,7 @@ const props = defineProps({
   },
   requestConfig: {
     type: Array,
-    default: null,
+    defaul: null,
   },
   // /**
   //  * 表格数据是否新鲜
@@ -45,6 +45,10 @@ const props = defineProps({
   reloading: {
     type: Boolean,
     default: false,
+  },
+  customPreset: {
+    type: Array,
+    default: null,
   },
 })
 
@@ -83,7 +87,9 @@ const columns = () => {
 //#region ## 数据请求 ==================================================
 
 const { data = [], loading, current, total, pageSize, refresh, changePagination, reloading, run } = props.requestConfig
-  ? useList.$preset(['loading-delay'])(...props.requestConfig)
+  ? props.customPreset
+    ? useRequest.$preset(props.customPreset)(...props.requestConfig)
+    : useList.$preset(['loading-delay'])(...props.requestConfig)
   : {}
 console.log('-> total', total)
 
@@ -183,6 +189,9 @@ defineExpose({
   handleDelete,
   getTableDataLength,
   fetchData: run,
+  print(args) {
+    table.value.print(args)
+  },
 })
 </script>
 
@@ -230,6 +239,7 @@ defineExpose({
     <vxe-column type="seq" width="60"></vxe-column>
     <component :is="columns"></component>
     <slot name="default"></slot>
+    <slot name="empty"></slot>
     <!--    <vxe-column v-for="col in columnSchema" :key="col.field" show-overflow="tooltip" v-bind="col">-->
     <!--      &lt;!&ndash;      <template v-if="col.slots">&ndash;&gt;-->
     <!--      &lt;!&ndash;        <template v-for="(slot,slotKey) in col.slots" :key="slotKey">&ndash;&gt;-->
