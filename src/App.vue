@@ -1,9 +1,9 @@
 <script setup>
 // noinspection ES6UnusedImports
-import {computed, h, nextTick, reactive, ref, resolveComponent, shallowRef, watch} from 'vue'
+import { computed, h, nextTick, reactive, ref, resolveComponent, shallowRef, watch } from 'vue'
 // import { Button as AButton, Tabs as Atab, TabPane } from 'ant-design-vue'
 import ImportExcel from '@/components/ImportExcel.vue'
-import {EditOutlined, QuestionCircleOutlined, ExclamationCircleOutlined} from '@ant-design/icons-vue'
+import { EditOutlined, QuestionCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons-vue'
 
 import BaseTable from '@/components/BaseTable.vue'
 import ModalImport from '@/components/ModalImport.vue'
@@ -15,11 +15,11 @@ import 'ant-design-vue/lib/modal/style/index.css'
 
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import request from '@/utils/request'
-import useRequest, {useList} from '@/utils/useRequest'
-import {formatTime} from '@/utils/time'
-import {forEach, isArray, isObject, map, throttle} from 'lodash'
+import useRequest, { useList } from '@/utils/useRequest'
+import { formatTime } from '@/utils/time'
+import { forEach, isArray, isObject, map, throttle } from 'lodash'
 
-import {time} from '@/utils/time.js'
+import { time } from '@/utils/time.js'
 
 import SelectWorkOrder from '@/components/SelectWorkOrder.vue'
 import useTableEdit from '@/composables/useTableEdit'
@@ -33,7 +33,7 @@ function handleClick() {
 }
 
 // 编辑后改变单元格样式
-const cellStyle = ({row, column}) => {
+const cellStyle = ({ row, column }) => {
   if (column.property === 'tProduceBeginDate' || column.property === 'OrderList') {
     if (row._hasEdit) {
       return {
@@ -106,7 +106,7 @@ const weeks = computed(() => {
  */
 const weeksForQuery = computed(() => {
   const ret = weeks.value.map((week, index) => {
-    const {start, end} = week
+    const { start, end } = week
     return {
       tStartDateBegin: start,
       tStartDateEnd: end,
@@ -115,7 +115,7 @@ const weeksForQuery = computed(() => {
     }
   })
 
-  return [{fType: 0}, ...ret]
+  return [{ fType: 0 }, ...ret]
 })
 const activeWeek = computed(() => {
   return weeksForQuery.value[activeKey.value]
@@ -197,6 +197,13 @@ const materialTable = {
     {
       field: 'cWeekNo',
       title: '周次编码',
+      formatter: ({ cellValue }) => {
+        // TODO 可以优化
+        const day = time(cellValue)
+        const day2 = day.add('7', 'day')
+        const week = day.week()
+        return `${day.year()}年第${week}周（${day.format('MM月DD日')}~${day2.format('MM月DD日')}）`
+      },
     },
     {
       field: 'cProductName',
@@ -244,7 +251,7 @@ const materialTable = {
             onChange: materialTableEdit.handleCellChange,
           })
         },
-        default: ({row}) => {
+        default: ({ row }) => {
           return h(
             'div',
             null,
@@ -252,11 +259,12 @@ const materialTable = {
             [
               row.OrderList.length
                 ? row.OrderList.map((item) => {
-                  console.log('-> item', item)
-                  const {label, fPlanningCount, fIsReleaseOrder} = item
-                  return `${label}（${fPlanningCount}件）`
-                }).join(',')
-                : h('span', {class: 'text-gray-300'}, '请选择关联工单'),
+                    console.log('-> item', item)
+                    const { label, fPlanningCount, fIsReleaseOrder } = item
+                    const statusText = fIsReleaseOrder ? '，已下达' : '，未下达'
+                    return `${label}（${fPlanningCount}件${statusText}）`
+                  }).join(',')
+                : h('span', { class: 'text-gray-300' }, '请选择关联工单'),
               // row.cRelateNo,
               h(EditOutlined, {
                 class: '-translate-y-0.5 text-green-400 ml-2',
@@ -292,17 +300,16 @@ const materialTable = {
 //#region ## 关联工单 ==================================================
 async function associatedWorkOrder(rows) {
   const List = map(rows, (row) => {
-
-    const {id, OrderList} = row
+    const { id, OrderList } = row
     const fProductionOrderInfoIds = map(OrderList, (item) => {
       return item.fProductionOrderInfoId
     })
     return {
       fApsMaterialRequestInfoId: id,
-      fProductionOrderInfoIds
+      fProductionOrderInfoIds,
     }
   })
-  console.log("-> List", List);
+  console.log('-> List', List)
 
   return request('/ApsMaterialRequestInfo/MatchOrderInfo', {
     method: 'POST',
@@ -321,7 +328,7 @@ const materialTableEdit = useTableEdit(associatedWorkOrder, {
 //#region ## 编辑组装时间 ==================================================
 async function editAssemblyTime(rows) {
   const List = map(rows, (row) => {
-    const {id, tProduceBeginDate} = row
+    const { id, tProduceBeginDate } = row
     return {
       id,
       tProduceBeginDate,
@@ -335,7 +342,7 @@ async function editAssemblyTime(rows) {
   })
 }
 
-const {hasEdit, handleCellChange, saveTable, resetTable, refreshed} = useTableEdit(editAssemblyTime, {
+const { hasEdit, handleCellChange, saveTable, resetTable, refreshed } = useTableEdit(editAssemblyTime, {
   tableRef: salesOrderTableRef,
 })
 
@@ -378,6 +385,27 @@ function handleVisibleChange(bool) {
   isWorkOrderReleaseConfirmVisible.value = true
 }
 
+async function workOrderRelease() {
+  const selectedRows = materialTableRef.value.getSelectedRows()
+  const ids = selectedRows.map((item) => {
+    return item.id
+  })
+  await useRequest(
+    async () => {
+      return request('/ApsMaterialRequestInfo/ReleaseOrder', {
+        method: 'POST',
+        data: {
+          ids,
+        },
+      })
+    },
+    {
+      successMessage: '工单下达成功!',
+    },
+  )
+  materialTableRef.value.refresh()
+}
+
 //#endregion
 
 //#region ## 订单表删除 ==================================================
@@ -411,8 +439,8 @@ function getService(url) {
 
 const materialCalculating = ref(false)
 
-async function _materialCalcHandler({service, text}) {
-  const {loading: reqLoading, error} = useRequest(service)
+async function _materialCalcHandler({ service, text }) {
+  const { loading: reqLoading, error } = useRequest(service)
   const stop = watch(reqLoading, (newVal, oldVal) => {
     // NOTE 因为请求返回之后立即请求并不一定是最新数据, 所以在取消loading状态之前手动加一个延时防止操作过快时数据可能错误
 
@@ -446,7 +474,7 @@ const materialCalcButtons = {
       },
       title: '确认重新计算毛需求吗?',
       icon: h(ExclamationCircleOutlined),
-      content: h('div', {style: 'color:red;'}, '重新计算毛需求将会清除当前数据并生成新版本。已有的期初结余、本期在制量等数据需要重新计算。'),
+      content: h('div', { style: 'color:red;' }, '重新计算毛需求将会清除当前数据并生成新版本。已有的期初结余、本期在制量等数据需要重新计算。'),
       okText: '确认',
       cancelText: '取消',
     },
@@ -468,9 +496,9 @@ const materialCalcButtons = {
 forEach(materialCalcButtons, (button) => {
   button.handler = () => {
     // button.beforeClick &&
-    const {confirmConfig} = button
+    const { confirmConfig } = button
     if (confirmConfig && confirmConfig._checkShouldConfirm()) {
-      Modal.confirm({...confirmConfig, onOk: () => _materialCalcHandler(button)})
+      Modal.confirm({ ...confirmConfig, onOk: () => _materialCalcHandler(button) })
       return
     }
     return _materialCalcHandler(button)
@@ -529,8 +557,7 @@ const materialTableReloading = ref(false)
           <vxe-column field="fCount" show-overflow="tooltip" title="数量"></vxe-column>
           <!--        :edit-render="{ name: 'ADatePicker' }"-->
           <!--           TODO 无效因为有default slot-->
-          <vxe-column :edit-render="{ placeholder: '请选择组装日期' }" field="tProduceBeginDate" show-overflow="tooltip"
-                      title="组装开始时间">
+          <vxe-column :edit-render="{ placeholder: '请选择组装日期' }" field="tProduceBeginDate" show-overflow="tooltip" title="组装开始时间">
             <template #default="{ row }">
               <tempalte v-if="row.tProduceBeginDate">
                 <span>
@@ -541,13 +568,12 @@ const materialTableReloading = ref(false)
                 <span class="text-gray-300">请选择组装日期</span>
               </template>
 
-              <EditOutlined class="-translate-y-0.5 text-green-400 ml-2"/>
+              <EditOutlined class="-translate-y-0.5 text-green-400 ml-2" />
             </template>
             <template #edit="{ row, column }">
               <!--  ? ant-design-vue的update和change事件均无效, 不知道原因... -->
               <!--                      <a-date-picker :value="dayjs(row.tProduceBeginDate)" @update:value="log" />-->
-              <vxe-input v-model="row.tProduceBeginDate" placeholder="请选择组装日期" transfer type="date"
-                         @change="handleCellChange(row, column)"></vxe-input>
+              <vxe-input v-model="row.tProduceBeginDate" placeholder="请选择组装日期" transfer type="date" @change="handleCellChange(row, column)"></vxe-input>
             </template>
           </vxe-column>
           <vxe-column field="cRelateNo" show-overflow="tooltip" title="关联组装单"></vxe-column>
@@ -562,7 +588,7 @@ const materialTableReloading = ref(false)
 
       <!--    毛需求计算 -->
       <div v-show="activeKey !== '0'">
-        <a-divider/>
+        <a-divider />
         <h2 class="font-bold text-lg">物料需求清单</h2>
         <div class="mt-4">
           <BaseTable
@@ -581,24 +607,23 @@ const materialTableReloading = ref(false)
                 :key="button.text"
                 :loading="materialCalculating || materialTableReloading"
                 @click="button.handler"
-              >{{ button.text }}
+                >{{ button.text }}
               </a-button>
               <a-popconfirm
                 :visible="isWorkOrderReleaseConfirmVisible"
                 cancel-text="取消"
                 ok-text="确认"
                 title="确认下达工单?"
+                @confirm="workOrderRelease"
                 @visibleChange="handleVisibleChange"
               >
                 <a-button>工单下达</a-button>
               </a-popconfirm>
               <!--             TODO 需要提示-->
-              <a-button>工单导出</a-button>
+              <!--              <a-button>工单导出</a-button>-->
             </template>
             <template #buttons-right>
-              <a-button v-show="materialTableEdit.hasEdit.value" type="primary" @click="materialTableEdit.saveTable">
-                保存编辑
-              </a-button>
+              <a-button v-show="materialTableEdit.hasEdit.value" type="primary" @click="materialTableEdit.saveTable"> 保存编辑 </a-button>
               <a-button v-show="materialTableEdit.hasEdit.value" @click="materialTableEdit.resetTable">取消编辑</a-button>
             </template>
           </BaseTable>
@@ -609,10 +634,9 @@ const materialTableReloading = ref(false)
     <!--  导入对话框 -->
     <ModalImport :key="modalKey" v-model:visible="visible" @finish="finishImport"></ModalImport>
     <!--    齐套性检测对话框 -->
-    <a-modal v-model:visible="visibleCheckModal" class="flex justify-center" :footer="null" title="仓库齐套性检测"
-             width="auto">
+    <a-modal v-model:visible="visibleCheckModal" class="flex justify-center" :footer="null" title="仓库齐套性检测" width="auto">
       <div class="min-w-[1200px]">
-        <BaseTable id="storeUniformityCheck" :has-checkbox="false" row-id="cProductNo" v-bind="materialTable"/>
+        <BaseTable id="storeUniformityCheck" :has-checkbox="false" row-id="cProductNo" v-bind="materialTable" />
       </div>
     </a-modal>
   </a-config-provider>

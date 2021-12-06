@@ -19,9 +19,8 @@ export default function useTableEdit(saveService, { tableRef }) {
   }
 
   async function saveTable() {
-    hasEdit.value = false
     await saveService(editedRows.value)
-
+    hasEdit.value = false
     editedRows.value = {}
     message.success('保存成功!')
     tableRef.value.refresh()
