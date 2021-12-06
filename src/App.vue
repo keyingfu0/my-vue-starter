@@ -2,8 +2,7 @@
 // noinspection ES6UnusedImports
 import { computed, h, nextTick, reactive, ref, resolveComponent, shallowRef, watch } from 'vue'
 // import { Button as AButton, Tabs as Atab, TabPane } from 'ant-design-vue'
-import ImportExcel from '@/components/ImportExcel.vue'
-import { EditOutlined, QuestionCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons-vue'
+import { EditOutlined, ExclamationCircleOutlined } from '@ant-design/icons-vue'
 
 import BaseTable from '@/components/BaseTable.vue'
 import ModalImport from '@/components/ModalImport.vue'
@@ -15,9 +14,9 @@ import 'ant-design-vue/lib/modal/style/index.css'
 
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import request from '@/utils/request'
-import useRequest, { useList } from '@/utils/useRequest'
+import useRequest from '@/utils/useRequest'
 import { formatTime } from '@/utils/time'
-import { forEach, isArray, isObject, map, throttle } from 'lodash'
+import { flatten, forEach, map, throttle } from 'lodash'
 
 import { time } from '@/utils/time.js'
 
@@ -164,6 +163,13 @@ async function finishImport() {
   modalKey.value++
   salesOrderTableRef.value.refresh()
   console.log('-> salesOrderTableRef.value.refresh', salesOrderTableRef.value.refresh)
+}
+
+function getIds(tableRef) {
+  const selectedRows = tableRef.value.getSelectedRows()
+  return selectedRows.map((item) => {
+    return item.id
+  })
 }
 
 //#endregion
@@ -354,8 +360,9 @@ const { hasEdit, handleCellChange, saveTable, resetTable, refreshed } = useTable
 
 //#region ## 仓库齐套性检测 ==================================================
 const visibleCheckModal = ref(false)
+const storeUniformityCheck = ref()
 
-function handleStoreUniformityCheck() {
+async function handleStoreUniformityCheck() {
   // 是否选中行
   const selectedRows = salesOrderTableRef.value.getSelectedRows()
   if (!selectedRows) {
@@ -363,6 +370,195 @@ function handleStoreUniformityCheck() {
   }
 
   visibleCheckModal.value = true
+  await nextTick()
+  storeUniformityCheck.value.fetchData()
+}
+
+const rowClassName = ({ row }) => {
+  if (row.fGrossCount - row.fbalanceCount < 0) {
+    return 'bg-red-100'
+  }
+}
+
+// TODO 加一个tab, 筛选功能
+const StoreUniformityCheck = {
+  rowClassName,
+  columnSchema: [
+    {
+      field: 'cProductName',
+      title: '零部件名字',
+    },
+    {
+      field: 'fGrossCount',
+      title: '毛需求',
+    },
+    {
+      field: 'fbalanceCount',
+      title: '期初结余',
+    },
+    {
+      field: '毛需求-期初结余',
+      title: '毛需求-期初结余',
+      sortable: true,
+      sortType: 'number',
+      formatter: ({ row }) => {
+        return row.fGrossCount - row.fbalanceCount
+      },
+    },
+  ],
+  requestConfig: [
+    async (args = {}) => {
+      // TODO 放到表格组件内部
+      const ids = getIds(salesOrderTableRef)
+      return request('/ApsSalesOrderInfo/HomogeneityCheck_Warehouse', {
+        method: 'POST',
+        data: {
+          ids,
+          ...activeWeek.value,
+          ...args,
+        },
+      })
+    },
+    {
+      manual: true,
+    },
+  ],
+}
+
+//#endregion
+
+//#region ## ATP齐套性检测 ==================================================
+const visibleCheckAtpModal = ref(false)
+const storeAtpCheck = ref()
+
+async function handleStoreAtpCheck() {
+  // 是否选中行
+  const selectedRows = salesOrderTableRef.value.getSelectedRows()
+  if (!selectedRows) {
+    return
+  }
+
+  visibleCheckAtpModal.value = true
+  await nextTick()
+  storeAtpCheck.value.fetchData()
+}
+
+const rowClassNameAtp = ({ row }) => {
+  if (row.fATPCount < 0) {
+    return 'bg-red-100'
+  }
+}
+
+// TODO 加一个tab, 筛选功能
+const storeAtpCheckTable = {
+  rowClassName: rowClassNameAtp,
+  columnSchema: [
+    {
+      field: 'cProductName',
+      title: '零部件名字',
+    },
+    {
+      field: 'fGrossCount',
+      title: '毛需求',
+    },
+    {
+      field: 'fbalanceCount',
+      title: '期初结余',
+    },
+    {
+      field: 'fProduceCount',
+      title: '本周在制量',
+    },
+    {
+      field: 'fATPCount',
+      title: 'ATP',
+      sortable: true,
+      sortType: 'number',
+    },
+    // {
+    //   field: '毛需求-期初结余',
+    //   title: '毛需求-期初结余',
+    //   sortable: true,
+    //   sortType: 'number',
+    //   formatter: ({ row }) => {
+    //     return row.fGrossCount - row.fbalanceCount
+    //   },
+    // },
+  ],
+  requestConfig: [
+    async (args = {}) => {
+      // TODO 放到表格组件内部
+      const ids = getIds(salesOrderTableRef)
+      return request('/ApsSalesOrderInfo/HomogeneityCheck_Warehouse', {
+        method: 'POST',
+        data: {
+          ids,
+          ...activeWeek.value,
+          ...args,
+        },
+      })
+    },
+    {
+      manual: true,
+    },
+  ],
+}
+
+//#endregion
+caseClosed
+
+//#region ## 结案 ==================================================
+// TODO 重构提取
+const isCaseCloseConfirmVisible = ref(false)
+
+function handleVisibleCaseCloseChange(bool) {
+  if (!bool) {
+    isCaseCloseConfirmVisible.value = false
+    return
+  } // Determining condition before show the popconfirm.
+
+  // 是否选中行
+  const selectedRows = salesOrderTableRef.value.getSelectedRows()
+  if (!selectedRows) {
+    isCaseCloseConfirmVisible.value = false
+    return
+  }
+  isCaseCloseConfirmVisible.value = true
+}
+
+async function caseClosed() {
+  // 是否选中行
+  const selectedRows = salesOrderTableRef.value.getSelectedRows()
+  if (!selectedRows) {
+    return
+  }
+  // TODO  改为更合理的方式, 可以接受外部的loading ref !
+  const { run } = useRequest(
+    async () => {
+      return request('/ApsSalesOrderInfo/FinishApsSalesOrderInfoIDS', {
+        method: 'POST',
+        data: {},
+      })
+    },
+    {
+      // successMessage: '结案成功',
+      // manual: true,
+      onSuccess() {
+        message.success('结案成功')
+
+        salesOrderTableRef.value.refresh()
+      },
+    },
+  )
+  // TODO 这样无法判断业务代码错误???
+  // try {
+  //   await run()
+  //   message.success('结案成功')
+  //
+  //   salesOrderTableRef.value.refresh()
+  // } catch {
+  //
+  // }
 }
 
 //#endregion
@@ -386,11 +582,17 @@ function handleVisibleChange(bool) {
 }
 
 async function workOrderRelease() {
-  const selectedRows = materialTableRef.value.getSelectedRows()
-  const ids = selectedRows.map((item) => {
-    return item.id
-  })
-  await useRequest(
+  const rows = materialTableRef.value.getSelectedRows()
+  const ids = flatten(
+    rows.map((row) => {
+      const { OrderList } = row
+      return OrderList.map((item) => {
+        return item.fProductionOrderInfoId
+      })
+    }),
+  )
+  // TODO loading
+  const { run } = useRequest(
     async () => {
       return request('/ApsMaterialRequestInfo/ReleaseOrder', {
         method: 'POST',
@@ -400,10 +602,14 @@ async function workOrderRelease() {
       })
     },
     {
-      successMessage: '工单下达成功!',
+      // TODO 需要替换request中的message组件才可以用
+      // successMessage: '工单下达成功!',
+      onSuccess() {
+        message.success('工单下达成功')
+        materialTableRef.value.refresh()
+      },
     },
   )
-  materialTableRef.value.refresh()
 }
 
 //#endregion
@@ -538,8 +744,17 @@ const materialTableReloading = ref(false)
           <a-button @click="showModal">excel导入</a-button>
           <a-button @click="handleStoreUniformityCheck">仓库齐套性检测</a-button>
           <a-button @click="handleClick">打印组装单</a-button>
-          <a-button @click="handleStoreUniformityCheck">ATP齐套性检测</a-button>
-          <a-button @click="handleStoreUniformityCheck">结案</a-button>
+          <a-button @click="handleStoreAtpCheck">ATP齐套性检测</a-button>
+          <a-popconfirm
+            :visible="isCaseCloseConfirmVisible"
+            cancel-text="取消"
+            ok-text="确认"
+            title="确认结案"
+            @confirm="caseClosed"
+            @visibleChange="handleVisibleCaseCloseChange"
+          >
+            <a-button>结案</a-button>
+          </a-popconfirm>
         </template>
         <template #buttons-right>
           <a-button v-show="hasEdit" type="primary" @click="saveTable">保存编辑</a-button>
@@ -597,7 +812,7 @@ const materialTableReloading = ref(false)
             v-model:reloading="materialTableReloading"
             :edit-config="{ trigger: 'click', mode: 'cell' }"
             has-pager
-            row-id="cProductNo"
+            row-id="id"
             v-bind="materialTable"
             @refreshed="materialTableEdit.refreshed"
           >
@@ -636,7 +851,14 @@ const materialTableReloading = ref(false)
     <!--    齐套性检测对话框 -->
     <a-modal v-model:visible="visibleCheckModal" class="flex justify-center" :footer="null" title="仓库齐套性检测" width="auto">
       <div class="min-w-[1200px]">
-        <BaseTable id="storeUniformityCheck" :has-checkbox="false" row-id="cProductNo" v-bind="materialTable" />
+        <BaseTable id="storeUniformityCheck" ref="storeUniformityCheck" :has-checkbox="false" row-id="cProductNo" v-bind="StoreUniformityCheck" />
+      </div>
+    </a-modal>
+
+    <!--    ATP齐套性检测 -->
+    <a-modal v-model:visible="visibleCheckAtpModal" class="flex justify-center" :footer="null" title="ATP齐套性检测" width="auto">
+      <div class="min-w-[1200px]">
+        <BaseTable id="storeAtpCheck" ref="storeAtpCheck" :has-checkbox="false" row-id="cProductNo" v-bind="storeAtpCheckTable" />
       </div>
     </a-modal>
   </a-config-provider>

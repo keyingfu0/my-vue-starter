@@ -82,7 +82,7 @@ const columns = () => {
 
 //#region ## 数据请求 ==================================================
 
-const { data = [], loading, current, total, pageSize, refresh, changePagination, reloading } = props.requestConfig
+const { data = [], loading, current, total, pageSize, refresh, changePagination, reloading, run } = props.requestConfig
   ? useList.$preset(['loading-delay'])(...props.requestConfig)
   : {}
 console.log('-> total', total)
@@ -182,6 +182,7 @@ defineExpose({
   refresh: refreshTableData,
   handleDelete,
   getTableDataLength,
+  fetchData: run,
 })
 </script>
 
@@ -219,6 +220,7 @@ defineExpose({
     :loading="loading"
     :print-config="{}"
     highlight-hover-row
+    max-height="600"
     row-id="id"
     v-bind="$attrs"
     @checkbox-change="handleCheckboxChange"

@@ -150,7 +150,7 @@ const presets = {
     onBefore(params) {
       console.log('params', params[0])
       // 默认的10改为其他数值, 那如果自己要传10呢?..可以多传点其他的..
-      if (params[0].pageSize === 10) {
+      if (params[0]?.pageSize === 10) {
         // params[0].pageSize = 6
       }
     },
