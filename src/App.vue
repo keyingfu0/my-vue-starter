@@ -2,7 +2,7 @@
 // noinspection ES6UnusedImports
 import { computed, h, nextTick, reactive, ref, resolveComponent, shallowRef, watch } from 'vue'
 // import { Button as AButton, Tabs as Atab, TabPane } from 'ant-design-vue'
-import { EditOutlined, ExclamationCircleOutlined } from '@ant-design/icons-vue'
+import { EditOutlined, ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons-vue'
 
 import BaseTable from '@/components/BaseTable.vue'
 import ModalImport from '@/components/ModalImport.vue'
@@ -329,6 +329,28 @@ async function associatedWorkOrder(rows) {
 const materialTableEdit = useTableEdit(associatedWorkOrder, {
   tableRef: materialTableRef,
 })
+
+//#region ### 删除 ========================================
+function handleDeleteRelate(row) {
+  useRequest(
+    async () => {
+      return request('/ApsAssembleOrderInfo/DeleteApsAssembleOrderInfoByNos', {
+        method: 'POST',
+        data: {
+          cApsAssembleOrderNos: [row.cRelateNo],
+        },
+      })
+    },
+    {
+      onSuccess: () => {
+        message.success('删除成功')
+        salesOrderTableRef.value.refresh()
+      },
+    },
+  )
+}
+
+//#endregion
 
 //#endregion
 
@@ -979,7 +1001,13 @@ const materialTableReloading = ref(false)
             </template>
           </vxe-column>
           <vxe-column v-slot="{ row }" field="cRelateNo" show-overflow="tooltip" title="关联组装单">
-            <a-button type="link" @click="showAssociatedAssemblyOrder(row)">{{ row.cRelateNo }}</a-button>
+            <div class="group">
+              <a-button type="link" @click="showAssociatedAssemblyOrder(row)">{{ row.cRelateNo }}</a-button>
+
+              <a-popconfirm class="group-hover:inline-block hidden" cancel-text="取消" ok-text="确认" title="确认删除?" @confirm="handleDeleteRelate(row)">
+                <delete-outlined class="-ml-2 -translate-y-1 text-red-400" />
+              </a-popconfirm>
+            </div>
           </vxe-column>
           <!--          <vxe-column field="fStatus" show-overflow="tooltip" title="是否结案"></vxe-column>-->
           <vxe-column v-slot="{ row }" show-overflow="tooltip" title="操作">
