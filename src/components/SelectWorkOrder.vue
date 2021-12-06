@@ -1,6 +1,6 @@
 <script setup>
-import { reactive, shallowRef, watch } from 'vue'
-import { debounce } from 'lodash'
+import { computed, reactive, shallowRef, watch } from 'vue'
+import { debounce, keyBy } from 'lodash'
 import request from '@/utils/request'
 import useRequest, { useList } from '@/utils/useRequest'
 
@@ -14,6 +14,7 @@ const props = defineProps({
     default: () => ({}),
   },
 })
+const emit = defineEmits(['change'])
 
 let lastFetchId = 0
 const state = reactive({
@@ -42,13 +43,15 @@ const { run } = useRequest.$preset(['get-list'])(
 
       console.log('props.row.OrderList', props.row.OrderList)
       options.value = res.map((item) => {
-        const { cProductionOrderNo, id } = item
+        const { cProductionOrderNo, id, fPlanningCount } = item
         return {
           cProductionOrderNo,
           fIsReleaseOrder: 0,
           fProductionOrderInfoId: id,
           label: cProductionOrderNo,
+          // label: `${cProductionOrderNo}（${fPlanningCount}件）`,
           value: cProductionOrderNo,
+          fPlanningCount,
         }
       })
 
@@ -77,9 +80,23 @@ watch(
   },
 )
 
-// TODO 改变修改的方式 不要直接修改props
+// TODO 改为传json格式
+const optionsByValue = computed(() => {
+  return keyBy(options.value, 'value')
+})
+
 function handleChange() {
-  props.row._hasEdit = true
+  // props.row._hasEdit = true
+  emit('change', props.row)
+}
+
+// TODO 改变修改的方式 不要直接修改props
+function handleValueChange(value) {
+  // console.log(
+  //   'Georgia',
+  //   value.map((item) => optionsByValue.value[item.value]),
+  // )
+  props.row.OrderList = value.map((item) => optionsByValue.value[item.value])
 }
 </script>
 
@@ -91,10 +108,10 @@ function handleChange() {
   <!--    </a-select-option>-->
   <!--  </a-select>-->
 
-  <!--   TODO 改变修改的方式-->
+  <!--  TODO 改变修改的方式 不要直接修改props -->
   <a-select
-    v-model:value="row.OrderList"
     :filter-option="false"
+    :value="row.OrderList"
     label-in-value
     mode="multiple"
     option-label-prop="label"
@@ -102,6 +119,7 @@ function handleChange() {
     style="width: 100%"
     @change="handleChange"
     @search="fetchUser"
+    @update:value="handleValueChange"
   >
     <template #notFoundContent>
       <template v-if="state.fetching">
@@ -110,7 +128,7 @@ function handleChange() {
       <template v-else>暂无数据</template>
     </template>
     <a-select-option v-for="option in options" :key="option.cProductionOrderNo" :label="option.cProductionOrderNo" :value="option.cProductionOrderNo">
-      {{ option.cProductionOrderNo }}
+      {{ option.cProductionOrderNo }}{{ option.fPlanningCount ? `（${option.fPlanningCount}件）` : '' }}
     </a-select-option>
   </a-select>
 </template>
