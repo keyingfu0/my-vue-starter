@@ -6,8 +6,10 @@ import styleImport from 'vite-plugin-style-import'
 import babel from '@rollup/plugin-babel'
 import Components from 'unplugin-vue-components/vite'
 import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
+import { visualizer } from 'rollup-plugin-visualizer'
 import nodeResolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
+import vitePluginImp from 'vite-plugin-imp'
 
 export default defineConfig({
   css: {
@@ -18,7 +20,9 @@ export default defineConfig({
       scss: { charset: false },
     },
   },
-
+  build: {
+    // sourcemap: true,
+  },
   plugins: [
     vue(),
     Components({
@@ -38,23 +42,23 @@ export default defineConfig({
       exclude: 'node_modules/**',
       plugins: [
         '@babel/plugin-transform-runtime',
-        [
-          'import',
-          {
-            libraryName: 'lodash',
-            libraryDirectory: '',
-            camel2DashComponentName: false,
-          },
-          'lodash',
-        ],
         // [
         //   'import',
         //   {
-        //     libraryName: 'vxe-table',
-        //     style: true, // 样式是否也按需加载
+        //     libraryName: 'lodash',
+        //     libraryDirectory: '',
+        //     camel2DashComponentName: false,
         //   },
-        //   'vxe',
+        //   'lodash',
         // ],
+        [
+          'import',
+          {
+            libraryName: 'vxe-table',
+            style: true, // 样式是否也按需加载
+          },
+          'vxe',
+        ],
         // [
         //   'import',
         //   {
@@ -68,23 +72,53 @@ export default defineConfig({
         '@babel/plugin-proposal-nullish-coalescing-operator',
       ],
     }),
-    styleImport({
-      libs: [
+    vitePluginImp({
+      libList: [
         {
-          libraryName: 'vxe-table',
-          esModule: true,
-          resolveComponent: (name) => `vxe-table/es/${name}`,
-          resolveStyle: (name) => `vxe-table/es/${name}/style.css`,
+          libName: 'lodash',
+          libDirectory: '',
+          camel2DashComponentName: false,
+          style: () => {
+            return false
+          },
         },
+        // {
+        //   libName: 'ant-design-vue',
+        //   style(name) {
+        //     if (/popconfirm/.test(name)) {
+        //       // support multiple style file path to import
+        //       return [
+        //         'ant-design-vue/es/button/style/index.css',
+        //         'ant-design-vue/es/popover/style/index.css'
+        //       ]
+        //     }
+        //     return `ant-design-vue/es/${name}/style/index.css`
+        //   }
+        // },
       ],
     }),
-    nodeResolve({
-      mainFields: ['jsnext:main'],
-    }),
-    commonjs({
-      include: 'node_modules/**',
-    }),
+    // styleImport({
+    //   libs: [
+    //     {
+    //       libraryName: 'vxe-table',
+    //       esModule: true,
+    //       resolveComponent: (name) => `vxe-table/es/${name}`,
+    //       resolveStyle: (name) => `vxe-table/es/${name}/style.css`,
+    //     },
+    //   ],
+    // }),
+    // nodeResolve({
+    //   mainFields: ['jsnext:main'],
+    // }),
+    // commonjs({
+    //   include: 'node_modules/**',
+    // }),
     // ElementPlus(),
+    visualizer({
+      // 用户分析包的大小 和 数量
+      // summaryOnly: true,
+      // limit: 10, //
+    }),
   ],
   resolve: {
     alias: {

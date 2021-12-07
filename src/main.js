@@ -7,10 +7,10 @@ import { createPinia } from 'pinia'
 import XEUtils from 'xe-utils'
 import VXETablePluginAntd from 'vxe-table-plugin-antd'
 import 'vxe-table-plugin-antd/dist/style.css'
-import ADatePicker from 'ant-design-vue/lib/date-picker'
-import 'ant-design-vue/lib/date-picker/style/index.css'
-import ASelect, { SelectOption } from 'ant-design-vue/lib/select'
-import 'ant-design-vue/lib/select/style/index.css'
+import ADatePicker from 'ant-design-vue/es/date-picker'
+import 'ant-design-vue/es/date-picker/style/index.css'
+import ASelect, { SelectOption } from 'ant-design-vue/es/select'
+import 'ant-design-vue/es/select/style/index.css'
 
 import {
   // 核心

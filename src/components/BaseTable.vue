@@ -1,7 +1,7 @@
 <script setup>
 import { h, nextTick, reactive, ref, resolveComponent, shallowRef, watch } from 'vue'
-import message from 'ant-design-vue/lib/message'
-import 'ant-design-vue/lib/message/style/index.css'
+import message from 'ant-design-vue/es/message'
+import 'ant-design-vue/es/message/style/index.css'
 import useRequest, { useList } from '@/utils/useRequest'
 import request from '@/utils/request'
 import { ReloadOutlined } from '@ant-design/icons-vue'

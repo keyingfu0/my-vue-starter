@@ -35,11 +35,14 @@ specifiers:
   lodash: ^4.17.21
   pinia: ^2.0.0-rc.8
   ramda: ^0.27.1
+  rollup-plugin-analyzer: ^4.0.0
+  rollup-plugin-visualizer: ^5.5.2
   standard-version: ^9.3.1
   tailwindcss: ^2.2.12
   unplugin-element-plus: ^0.1.3
   unplugin-vue-components: ^0.17.2
   vite: ^2.5.5
+  vite-plugin-imp: ^2.0.10
   vite-plugin-style-import: ^1.4.0
   vue: ^3.2.10
   vue-request: ^1.2.0
@@ -94,10 +97,13 @@ devDependencies:
   f2elint: 1.2.3
   install: 0.13.0
   less: 4.1.2
+  rollup-plugin-analyzer: 4.0.0
+  rollup-plugin-visualizer: 5.5.2
   standard-version: 9.3.2
   tailwindcss: 2.2.19_autoprefixer@10.4.0
   unplugin-vue-components: 0.17.2_vite@2.6.14+vue@3.2.22
   vite: 2.6.14_less@4.1.2
+  vite-plugin-imp: 2.0.10_vite@2.6.14
   vite-plugin-style-import: 1.4.0_vite@2.6.14
 
 packages:
@@ -4824,6 +4830,13 @@ packages:
     resolution: {integrity: sha512-sNxgpk9793nzSs7bA6JQJGeIuRBQhAaNGG77kzYQgMkrID+lS6SlK07K5LaptscDlSaIgH+GPFzf+d75FVxozA==}
     dev: true
 
+  /is-wsl/2.2.0:
+    resolution: {integrity: sha512-fKzAra0rGJUUBwGBgNkHZuToZcn+TtXHpeCgmkMJMMYx1sQDYaCSyjJBSCa2nH1DGm7s3n1oBnohoVTBaN7Lww==}
+    engines: {node: '>=8'}
+    dependencies:
+      is-docker: 2.2.1
+    dev: true
+
   /isarray/1.0.0:
     resolution: {integrity: sha1-u5NdSFgsuhaMBoNJV6VKPgcSTxE=}
     dev: true
@@ -5520,6 +5533,14 @@ packages:
     engines: {node: '>=6'}
     dependencies:
       mimic-fn: 2.1.0
+    dev: true
+
+  /open/7.4.2:
+    resolution: {integrity: sha512-MVHddDVweXZF3awtlAS+6pgKLlm/JgxZ90+/NBurBoQctVOOB/zDdVjcyPzQ+0laDGbsWgrRkflI65sQeOgT9Q==}
+    engines: {node: '>=8'}
+    dependencies:
+      is-docker: 2.2.1
+      is-wsl: 2.2.0
     dev: true
 
   /opencollective-postinstall/2.0.3:
@@ -6263,6 +6284,24 @@ packages:
       glob: 7.2.0
     dev: true
 
+  /rollup-plugin-analyzer/4.0.0:
+    resolution: {integrity: sha512-LL9GEt3bkXp6Wa19SNR5MWcvHNMvuTFYg+eYBZN2OIFhSWN+pEJUQXEKu5BsOeABob3x9PDaLKW7w5iOJnsESQ==}
+    engines: {node: '>=8.0.0'}
+    dev: true
+
+  /rollup-plugin-visualizer/5.5.2:
+    resolution: {integrity: sha512-sh+P9KhuWTzeStyRA5yNZpoEFGuj5Ph34JLMa9+muhU8CneFf9L0XE4fmAwAojJLWp//uLUEyytBPSCdZEg5AA==}
+    engines: {node: '>=10.16'}
+    hasBin: true
+    peerDependencies:
+      rollup: ^2.0.0
+    dependencies:
+      nanoid: 3.1.30
+      open: 7.4.2
+      source-map: 0.7.3
+      yargs: 16.2.0
+    dev: true
+
   /rollup/2.60.1:
     resolution: {integrity: sha512-akwfnpjY0rXEDSn1UTVfKXJhPsEBu+imi1gqBA1ZkHGydUnkV/fWCC90P7rDaLEW8KTwBcS1G3N4893Ndz+jwg==}
     engines: {node: '>=10.0.0'}
@@ -6442,6 +6481,11 @@ packages:
   /source-map/0.6.1:
     resolution: {integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==}
     engines: {node: '>=0.10.0'}
+
+  /source-map/0.7.3:
+    resolution: {integrity: sha512-CkCj6giN3S+n9qrYiBTX5gystlENnRW5jZeNLHpe6aue+SrHcG5VYwujhW9s4dY31mEGsxBDrHR6oI69fTXsaQ==}
+    engines: {node: '>= 8'}
+    dev: true
 
   /sourcemap-codec/1.4.8:
     resolution: {integrity: sha512-9NykojV5Uih4lgo5So5dtw+f0JgJX30KCNI8gwhz2J9A15wD0Ml6tjHKwf6fTSa6fAdVBdZeNOs9eJ71qCk8vA==}
@@ -7125,6 +7169,22 @@ packages:
       is-buffer: 2.0.5
       unist-util-stringify-position: 2.0.3
       vfile-message: 2.0.4
+    dev: true
+
+  /vite-plugin-imp/2.0.10_vite@2.6.14:
+    resolution: {integrity: sha512-fn+g1/K3jedgS+etFHhD9fQzxpX3DI5DXjCw3wkP+dYBzG2sPDGoSiOxxsZS4YRFf5jo94ARqMMam9dbA6mWag==}
+    peerDependencies:
+      vite: '>= 2.0.0-beta.5'
+    dependencies:
+      '@babel/core': 7.16.0
+      '@babel/generator': 7.16.0
+      '@babel/parser': 7.16.4
+      '@babel/traverse': 7.16.3
+      chalk: 4.1.2
+      param-case: 3.0.4
+      vite: 2.6.14_less@4.1.2
+    transitivePeerDependencies:
+      - supports-color
     dev: true
 
   /vite-plugin-style-import/1.4.0_vite@2.6.14:

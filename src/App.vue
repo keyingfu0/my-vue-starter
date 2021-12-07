@@ -6,11 +6,11 @@ import { EditOutlined, ExclamationCircleOutlined, DeleteOutlined } from '@ant-de
 
 import BaseTable from '@/components/BaseTable.vue'
 import ModalImport from '@/components/ModalImport.vue'
-import message from 'ant-design-vue/lib/message'
-import 'ant-design-vue/lib/message/style/index.css'
+import message from 'ant-design-vue/es/message'
+import 'ant-design-vue/es/message/style/index.css'
 
-import Modal from 'ant-design-vue/lib/modal'
-import 'ant-design-vue/lib/modal/style/index.css'
+import Modal from 'ant-design-vue/es/modal'
+import 'ant-design-vue/es/modal/style/index.css'
 
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import request from '@/utils/request'

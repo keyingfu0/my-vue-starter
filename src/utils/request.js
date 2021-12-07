@@ -1,8 +1,8 @@
 import axios from 'axios'
 // import { ElMessage } from 'element-plus'
 import { router } from '@/routes'
-import message from 'ant-design-vue/lib/message'
-import 'ant-design-vue/lib/message/style/index.css'
+import message from 'ant-design-vue/es/message'
+import 'ant-design-vue/es/message/style/index.css'
 
 message.config({
   duration: 2,

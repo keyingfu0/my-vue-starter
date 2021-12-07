@@ -5,13 +5,13 @@ import { reactive, ref, shallowRef, watch } from 'vue'
  * @see [ant-design-vue 的message和Modal没有样式 · Issue #162 · antfu/unplugin-vue-components](https://github.com/antfu/unplugin-vue-components/issues/162)
  */
 import ImportExcel from '@/components/ImportExcel.vue'
-import AAlert from 'ant-design-vue/lib/alert'
-import ASpin from 'ant-design-vue/lib/spin'
+import AAlert from 'ant-design-vue/es/alert'
+import ASpin from 'ant-design-vue/es/spin'
 import BaseTable from '@/components/BaseTable.vue'
-import message from 'ant-design-vue/lib/message'
-import 'ant-design-vue/lib/message/style/index.css'
-import 'ant-design-vue/lib/alert/style/index.css'
-import 'ant-design-vue/lib/spin/style/index.css'
+import message from 'ant-design-vue/es/message'
+import 'ant-design-vue/es/message/style/index.css'
+import 'ant-design-vue/es/alert/style/index.css'
+import 'ant-design-vue/es/spin/style/index.css'
 
 const props = defineProps({
   visible: {

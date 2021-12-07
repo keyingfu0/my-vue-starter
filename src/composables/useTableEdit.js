@@ -1,7 +1,7 @@
 import { ref, shallowRef, watch } from 'vue'
 import { map } from 'lodash'
 import request from '@/utils/request'
-import message from 'ant-design-vue/lib/message'
+import message from 'ant-design-vue/es/message'
 
 export default function useTableEdit(saveService, { tableRef }) {
   const hasEdit = ref(false)

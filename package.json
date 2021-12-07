@@ -57,10 +57,13 @@
     "f2elint": "^1.2.0",
     "install": "^0.13.0",
     "less": "^4.1.2",
+    "rollup-plugin-analyzer": "^4.0.0",
+    "rollup-plugin-visualizer": "^5.5.2",
     "standard-version": "^9.3.1",
     "tailwindcss": "^2.2.12",
     "unplugin-vue-components": "^0.17.2",
     "vite": "^2.5.5",
+    "vite-plugin-imp": "^2.0.10",
     "vite-plugin-style-import": "^1.4.0"
   }
 }

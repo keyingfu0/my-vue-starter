@@ -4,7 +4,7 @@ import { computed, nextTick, ref, shallowRef, watch } from 'vue'
 import { readExcel } from '@/utils/excel.js'
 import { last } from 'lodash'
 import request from '@/utils/request'
-import message from 'ant-design-vue/lib/message'
+import message from 'ant-design-vue/es/message'
 
 const fileList = ref([])
 

@@ -3,7 +3,7 @@ const defaultTheme = require('tailwindcss/defaultTheme')
 /** @type {import("@types/tailwindcss/tailwind-config").TailwindConfig } */
 module.exports = {
   mode: 'jit',
-  purge: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
+  purge: ['./src/**/*.html', './src/**/*.vue', './src/**/*.jsx'],
   important: true,
   theme: {
     extend: {
@@ -17,6 +17,6 @@ module.exports = {
     require('@tailwindcss/typography'),
     require('@tailwindcss/line-clamp'),
     require('@tailwindcss/aspect-ratio'),
-    require('daisyui'),
+    // require('daisyui'),
   ],
 }
