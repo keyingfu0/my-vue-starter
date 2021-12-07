@@ -947,7 +947,7 @@ function handleVisibileExportChange(bool) {
 
 function getAbsoluteUrl(url) {
   if (!url) return ''
-  return `http://47.98.59.211:6247/${url}`
+  return `${import.meta.env.VITE_APP_BASE_URL}/${url}`
 }
 
 function exportExcel() {

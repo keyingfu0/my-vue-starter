@@ -66,7 +66,7 @@ const steps = [
         <!--       <span @click="handleDownload">点击下载excel模板</span>-->
         <!--        TODO  link 可以换成link类型的a-button-->
         <a type="link" @click="handleDownload"
-           href="http://47.98.59.211:6247/Content/template/ApsSalesOrderImport.xlsx"
+           :href="url"
            download="订单导入.xlsx">点击下载订单导入模板
         </a>
         </div>`,
@@ -78,6 +78,7 @@ const steps = [
 
         return {
           handleDownload,
+          url: `${import.meta.env.VITE_APP_BASE_URL}/Content/template/ApsSalesOrderImport.xlsx`,
         }
         // return
       },
