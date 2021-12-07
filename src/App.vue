@@ -22,6 +22,7 @@ import { time } from '@/utils/time.js'
 
 import SelectWorkOrder from '@/components/SelectWorkOrder.vue'
 import useTableEdit from '@/composables/useTableEdit'
+import { saveAs } from 'file-saver'
 
 // const tableData = ref()
 
@@ -925,6 +926,67 @@ forEach(materialCalcButtons, (button) => {
 //#region ## 表格重新加载中 ==================================================
 const materialTableReloading = ref(false)
 //#endregion
+
+//#region ## 工单导出 ==================================================
+const isExportConfirmVisible = ref(false)
+
+function handleVisibileExportChange(bool) {
+  if (!bool) {
+    isExportConfirmVisible.value = false
+    return
+  } // Determining condition before show the popconfirm.
+
+  // 是否选中行
+  const selectedRows = materialTableRef.value.getSelectedRows()
+  if (!selectedRows) {
+    isExportConfirmVisible.value = false
+    return
+  }
+  isExportConfirmVisible.value = true
+}
+
+function getAbsoluteUrl(url) {
+  if (!url) return ''
+  return `http://47.98.59.211:6247/${url}`
+}
+
+function exportExcel() {
+  const rows = materialTableRef.value.getSelectedRows()
+  const cProductionOrderNo = flatten(
+    rows.map((row) => {
+      const { OrderList } = row
+      return OrderList.map((item) => {
+        return item.cProductionOrderNo
+      })
+    }),
+  ).join(',')
+
+  if (!cProductionOrderNo) {
+    message.warning('请选择有关联工单的行')
+    return
+  }
+
+  // TODO loading
+  const { run } = useRequest.$origin(
+    async () => {
+      return request('/ApsMaterialRequestInfo/ExportExcel', {
+        method: 'POST',
+        data: {
+          cProductionOrderNo,
+        },
+      })
+    },
+    {
+      onSuccess(res) {
+        message.success('工单导出成功!')
+        // TODO 更换下载地址
+        res.href && saveAs(getAbsoluteUrl(res.href))
+      },
+    },
+  )
+}
+
+//#endregion
 </script>
 
 <template>
@@ -1045,7 +1107,7 @@ const materialTableReloading = ref(false)
                 :visible="isWorkOrderReleaseConfirmVisible"
                 cancel-text="取消"
                 ok-text="确认"
-                title="确认下达工单?"
+                title="确认下达选中行的工单?"
                 @confirm="workOrderRelease"
                 @visibleChange="handleVisibleChange"
               >
@@ -1053,6 +1115,16 @@ const materialTableReloading = ref(false)
               </a-popconfirm>
               <!--             TODO 需要提示-->
               <!--              <a-button>工单导出</a-button>-->
+              <a-popconfirm
+                :visible="isExportConfirmVisible"
+                cancel-text="取消"
+                ok-text="确认"
+                title="确认导出选中行的工单?"
+                @confirm="exportExcel"
+                @visibleChange="handleVisibileExportChange"
+              >
+                <a-button>工单导出</a-button>
+              </a-popconfirm>
             </template>
             <template #buttons-right>
               <a-button v-show="materialTableEdit.hasEdit.value" type="primary" @click="materialTableEdit.saveTable"> 保存编辑 </a-button>
