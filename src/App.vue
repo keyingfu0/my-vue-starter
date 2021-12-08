@@ -765,8 +765,20 @@ const assemblyOrderTable2 = {
   hasToolbar: false,
   columnSchema: [
     {
+      field: 'cSalesOrderNo',
+      title: '订单编号',
+    },
+    {
+      field: 'cBomNo',
+      title: '订单BOM编号',
+    },
+    {
       field: 'cProductNo',
-      title: '物料编码',
+      title: '物料编号',
+    },
+    {
+      field: 'cProductName',
+      title: '物料名称',
     },
     {
       field: 'cCustomerName',
@@ -1032,11 +1044,13 @@ function exportExcel() {
           <a-button v-show="hasEdit" @click="resetTable">取消编辑</a-button>
         </template>
         <template #default>
-          <vxe-column field="cProductNo" show-overflow="tooltip" title="物料编码"></vxe-column>
+          <vxe-column field="cSalesOrderNo" show-overflow="tooltip" title="订单编号"></vxe-column>
+          <vxe-column field="cBomNo" show-overflow="tooltip" title="订单BOM编号"></vxe-column>
+          <vxe-column field="cProductNo" show-overflow="tooltip" title="物料编号"></vxe-column>
           <vxe-column
             field="cProductName"
             show-overflow="tooltip"
-            title="成品名字
+            title="物料名称
 "
           ></vxe-column>
           <vxe-column field="cCustomerName" show-overflow="tooltip" title="客户名"></vxe-column>

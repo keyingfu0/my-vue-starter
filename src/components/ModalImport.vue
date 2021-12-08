@@ -135,8 +135,16 @@ const steps = [
                 title: '订单编号',
               },
               {
-                field: '物料编码',
-                title: '物料编码',
+                field: '订单BOM编号',
+                title: '订单BOM编号',
+              },
+              {
+                field: '物料编号',
+                title: '物料编号',
+              },
+              {
+                field: '物料名称',
+                title: '物料名称',
               },
               {
                 field: '客户名',
