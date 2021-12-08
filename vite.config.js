@@ -51,14 +51,14 @@ export default defineConfig({
         //   },
         //   'lodash',
         // ],
-        [
-          'import',
-          {
-            libraryName: 'vxe-table',
-            style: true, // 样式是否也按需加载
-          },
-          'vxe',
-        ],
+        // [
+        //   'import',
+        //   {
+        //     libraryName: 'vxe-table',
+        //     style: true, // 样式是否也按需加载
+        //   },
+        //   'vxe',
+        // ],
         // [
         //   'import',
         //   {
@@ -81,6 +81,12 @@ export default defineConfig({
           style: () => {
             return false
           },
+        },
+        {
+          libName: 'vxe-table',
+          libDirectory: 'es',
+          camel2DashComponentName: true,
+          style: (name) => `vxe-table/es/${name}/style.css`,
         },
         // {
         //   libName: 'ant-design-vue',
