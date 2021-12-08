@@ -57,6 +57,7 @@ import {
   Table,
 } from 'vxe-table'
 import zhCN from 'vxe-table/es/locale/lang/zh-CN'
+import { handleDate } from '@/utils/excel'
 
 // 按需加载的方式默认是不带国际化的，自定义国际化需要自行解析占位符 '{0}'，例如：
 VXETable.setup({
@@ -80,6 +81,11 @@ VXETable.formats.mixin({
   // 格式化日期，默认 yyyy-MM-dd
   formatDate({ cellValue }, format) {
     return XEUtils.toDateString(cellValue, format || 'yyyy-MM-dd')
+  },
+  // 用于excel中日期的格式化
+  formatDateForExcel({ cellValue }, format) {
+    return handleDate(cellValue, format || 'yyyy-MM-dd')
+    // return XEUtils.toDateString(cellValue, format || 'yyyy-MM-dd')
   },
   // 四舍五入金额，每隔3位逗号分隔，默认2位数
   formatAmount({ cellValue }, digits = 2) {
