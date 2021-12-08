@@ -204,6 +204,7 @@ const materialTable = {
     {
       field: 'cWeekNo',
       title: '周次编码',
+      width: 266,
       formatter: ({ cellValue }) => {
         // TODO 可以优化
         const day = time(cellValue)
@@ -239,7 +240,8 @@ const materialTable = {
     {
       field: 'OrderList',
       title: '关联工单',
-      showOverflow: undefined,
+      width: 270,
+      showOverflow: false,
       editRender: {
         // TODO 无效 因为有default slot
         placeholder: '请选择关联工单',
@@ -289,6 +291,7 @@ const materialTable = {
     {
       field: 'fVersion',
       title: '版本',
+      width: 70,
     },
   ],
   requestConfig: [
@@ -718,11 +721,11 @@ async function assemblyOrderReq(row) {
 
 const assemblyOrderTable = {
   hasToolbar: false,
+  showOverflow: false,
   columnSchema: [
     {
       field: 'cProductName',
       title: '零部件名字',
-      showOverflow: undefined,
     },
     {
       field: 'fGrossCount',
@@ -1106,7 +1109,7 @@ async function editAssemblyTimeBatch(selectedRows) {
               <a-button type="link" @click="showAssociatedAssemblyOrder(row)">{{ row.cRelateNo }}</a-button>
 
               <a-popconfirm class="group-hover:inline-block hidden" cancel-text="取消" ok-text="确认" title="确认删除?" @confirm="handleDeleteRelate(row)">
-                <delete-outlined class="-ml-2 -translate-y-1 text-red-400" />
+                <delete-outlined v-if="row.cRelateNo" class="-ml-2 -translate-y-1 text-red-400" />
               </a-popconfirm>
             </div>
           </vxe-column>
@@ -1206,7 +1209,7 @@ async function editAssemblyTimeBatch(selectedRows) {
     </a-modal>
     <!--    关联组装单 -->
     <a-modal v-model:visible="visibleAssemblyOrderModal" class="flex justify-center" :footer="null" title="关联组装单" width="auto">
-      <a-button @click="print">打印组装单</a-button>
+      <a-button type="primary" @click="print">打印组装单</a-button>
       <div ref="assemblyOrderLists" class="min-w-[1200px]">
         <h2 class="font-bold text-2xl mt-4 text-center">订单列表</h2>
         <BaseTable id="assemblyOrder2" ref="assemblyOrder2" :has-checkbox="false" row-id="cProductNo" v-bind="assemblyOrderTable2"></BaseTable>

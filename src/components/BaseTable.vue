@@ -50,6 +50,10 @@ const props = defineProps({
     type: Array,
     default: null,
   },
+  showOverflow: {
+    type: String,
+    default: 'tooltip',
+  },
 })
 
 const emit = defineEmits(['refreshed', 'update:reloading'])
@@ -75,7 +79,7 @@ const columns = () => {
     return h(
       resolveComponent('vxe-column'),
       {
-        showOverflow: 'tooltip',
+        // showOverflow: 'tooltip',
         ...col,
         key: col.field,
       },
@@ -230,6 +234,7 @@ defineExpose({
     :data="data.List"
     :loading="loading"
     :print-config="{}"
+    :show-overflow="showOverflow"
     highlight-hover-row
     max-height="550"
     row-id="id"
