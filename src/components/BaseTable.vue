@@ -94,9 +94,11 @@ const { data = [], loading, current, total, pageSize, refresh, changePagination,
 console.log('-> total', total)
 
 // sync reloading
-if (props.reloading) {
-  watch(reloading, (val) => {
-    emit('update:reloading', val)
+if (props.reloading !== undefined) {
+  // console.log('-> props.reloading', props.reloading)
+  watch([loading, reloading], (newValues) => {
+    console.log('-> newValues', newValues)
+    emit('update:reloading', newValues[0] || newValues[1])
   })
 }
 // const {data, refresh} = useRequest(...props.requestConfig)
@@ -229,7 +231,7 @@ defineExpose({
     :loading="loading"
     :print-config="{}"
     highlight-hover-row
-    max-height="600"
+    max-height="550"
     row-id="id"
     v-bind="$attrs"
     @checkbox-change="handleCheckboxChange"

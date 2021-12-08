@@ -454,17 +454,11 @@ const StoreUniformityCheck = {
 //#region ## ATP齐套性检测 ==================================================
 const visibleCheckAtpModal = ref(false)
 const storeAtpCheck = ref()
+const bomNos = ref([])
+const storeAtpCheckReloading = ref(false)
 
 async function handleStoreAtpCheck() {
-  // 是否选中行
-  const selectedRows = salesOrderTableRef.value.getSelectedRows()
-  if (!selectedRows) {
-    return
-  }
-
   visibleCheckAtpModal.value = true
-  await nextTick()
-  storeAtpCheck.value.fetchData()
 }
 
 const rowClassNameAtp = ({ row }) => {
@@ -511,12 +505,12 @@ const storeAtpCheckTable = {
   ],
   requestConfig: [
     async (args = {}) => {
+      const cBomNos = bomNos.value.join(',')
       // TODO 放到表格组件内部
-      const ids = getIds(salesOrderTableRef)
-      return request('/ApsSalesOrderInfo/HomogeneityCheck_Warehouse', {
+      return request('/ApsSalesOrderInfo/HomogeneityCheck_ATP', {
         method: 'POST',
         data: {
-          ids,
+          cBomNos,
           ...activeWeek.value,
           ...args,
         },
@@ -526,6 +520,10 @@ const storeAtpCheckTable = {
       manual: true,
     },
   ],
+}
+
+function handleStoreAtpCheckSearch() {
+  storeAtpCheck.value.fetchData()
 }
 
 //#endregion
@@ -939,7 +937,7 @@ forEach(materialCalcButtons, (button) => {
 const materialTableReloading = ref(false)
 //#endregion
 
-//#region ## 工单导出 ==================================================
+//#region ## 工单计划导出 ==================================================
 const isExportConfirmVisible = ref(false)
 
 function handleVisibileExportChange(bool) {
@@ -990,7 +988,7 @@ function exportExcel() {
     },
     {
       onSuccess(res) {
-        message.success('工单导出成功!')
+        message.success('工单计划导出成功!')
         // TODO 更换下载地址
         res.href && saveAs(getAbsoluteUrl(res.href))
       },
@@ -1025,9 +1023,11 @@ function exportExcel() {
       >
         <template #buttons-left>
           <a-button @click="showModal">excel导入</a-button>
-          <a-button @click="handleStoreUniformityCheck">仓库齐套性检测</a-button>
-          <a-button @click="generateAssemblyOrder">生成组装单</a-button>
-          <a-button @click="handleStoreAtpCheck">ATP齐套性检测</a-button>
+
+          <a-button v-show="activeKey !== '0'" @click="handleStoreUniformityCheck">仓库齐套性检测</a-button>
+          <a-button v-show="activeKey !== '0'" @click="generateAssemblyOrder">生成组装单</a-button>
+          <a-button v-show="activeKey !== '0'" @click="handleStoreAtpCheck">ATP齐套性检测</a-button>
+
           <a-popconfirm
             :visible="isCaseCloseConfirmVisible"
             cancel-text="取消"
@@ -1036,7 +1036,7 @@ function exportExcel() {
             @confirm="caseClosed"
             @visibleChange="handleVisibleCaseCloseChange"
           >
-            <a-button>结案</a-button>
+            <a-button v-show="activeKey !== '0'">结案</a-button>
           </a-popconfirm>
         </template>
         <template #buttons-right>
@@ -1128,7 +1128,7 @@ function exportExcel() {
                 <a-button>工单下达</a-button>
               </a-popconfirm>
               <!--             TODO 需要提示-->
-              <!--              <a-button>工单导出</a-button>-->
+              <!--              <a-button>工单计划导出</a-button>-->
               <a-popconfirm
                 :visible="isExportConfirmVisible"
                 cancel-text="取消"
@@ -1137,7 +1137,7 @@ function exportExcel() {
                 @confirm="exportExcel"
                 @visibleChange="handleVisibileExportChange"
               >
-                <a-button>工单导出</a-button>
+                <a-button>工单计划导出</a-button>
               </a-popconfirm>
             </template>
             <template #buttons-right>
@@ -1161,7 +1161,22 @@ function exportExcel() {
     <!--    ATP齐套性检测 -->
     <a-modal v-model:visible="visibleCheckAtpModal" class="flex justify-center" :footer="null" title="ATP齐套性检测" width="auto">
       <div class="min-w-[1200px]">
-        <BaseTable id="storeAtpCheck" ref="storeAtpCheck" :has-checkbox="false" row-id="cProductNo" v-bind="storeAtpCheckTable" />
+        <a-alert class="mb-4" banner message="请输入一个或多个BOM编码进行查询（按回车添加）" show-icon type="info" />
+        <div class="flex">
+          <a-select v-model:value="bomNos" :options="[]" mode="tags" placeholder="请输入BOM编码" style="width: 70%"></a-select>
+          <div class="ml-4">
+            <!--             loading状态处理?-->
+            <a-button :disabled="bomNos.length < 1" :loading="storeAtpCheckReloading" type="primary" @click="handleStoreAtpCheckSearch">查询 </a-button>
+          </div>
+        </div>
+        <BaseTable
+          id="storeAtpCheck"
+          ref="storeAtpCheck"
+          v-model:reloading="storeAtpCheckReloading"
+          :has-checkbox="false"
+          row-id="cProductNo"
+          v-bind="storeAtpCheckTable"
+        />
       </div>
     </a-modal>
     <!--    关联组装单 -->

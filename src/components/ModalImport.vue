@@ -118,7 +118,7 @@ const steps = [
             <a-spin tip="正在上传中...请稍后"/>
           </div>
         </template>
-        <BaseTable max-height="600" :data="excelData" v-bind="tableConfig"></BaseTable>
+        <BaseTable :data="excelData" v-bind="tableConfig"></BaseTable>
         </div>`,
       components: { AAlert, BaseTable, ASpin },
       setup() {
