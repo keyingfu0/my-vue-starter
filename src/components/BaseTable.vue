@@ -203,7 +203,7 @@ defineExpose({
     <template #buttons>
       <div class="flex justify-between mr-4">
         <div class="space-x-4">
-          <slot name="buttons-left"></slot>
+          <slot :selectedRows="selectedRows" name="buttons-left"></slot>
           <a-popconfirm v-if="deleteConfig" cancel-text="取消" ok-text="确认" title="确认删除?" @confirm="handleDelete()">
             <a-button v-show="selectedRows.length > 0" danger type="primary">删除</a-button>
           </a-popconfirm>

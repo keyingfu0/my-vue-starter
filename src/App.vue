@@ -360,12 +360,12 @@ function handleDeleteRelate(row) {
 //#endregion
 
 //#region ## 编辑组装时间 ==================================================
-async function editAssemblyTime(rows) {
+async function editAssemblyTime(rows, newDate) {
   const List = map(rows, (row) => {
     const { id, tProduceBeginDate } = row
     return {
       id,
-      tProduceBeginDate,
+      tProduceBeginDate: newDate ?? tProduceBeginDate,
     }
   })
   return request('/ApsSalesOrderInfo/EditApsSalesOrderProductBeginTime', {
@@ -1001,6 +1001,19 @@ function exportExcel() {
 }
 
 //#endregion
+
+//#region ## 批量修改组装日期 ==================================================
+const produceBeginDateBatch = shallowRef()
+const editAssemblyTimeBatchVisible = ref(false)
+
+async function editAssemblyTimeBatch(selectedRows) {
+  await editAssemblyTime(selectedRows, produceBeginDateBatch.value)
+  message.success('修改组装单时间成功')
+  salesOrderTableRef.value.refresh()
+  editAssemblyTimeBatchVisible.value = false
+}
+
+//#endregion
 </script>
 
 <template>
@@ -1025,7 +1038,7 @@ function exportExcel() {
         v-bind="salesOrderTable"
         @refreshed="refreshed"
       >
-        <template #buttons-left>
+        <template #buttons-left="{ selectedRows }">
           <a-button @click="showModal">excel导入</a-button>
 
           <a-button v-show="activeKey !== '0'" @click="handleStoreUniformityCheck">仓库齐套性检测</a-button>
@@ -1042,6 +1055,14 @@ function exportExcel() {
           >
             <a-button v-show="activeKey !== '0'">结案</a-button>
           </a-popconfirm>
+
+          <a-popover v-model:visible="editAssemblyTimeBatchVisible" placement="bottom" trigger="click">
+            <template #content>
+              <vxe-input v-model="produceBeginDateBatch" parse-format="yyyy-dd-MM" placeholder="请选择组装日期" type="date"></vxe-input>
+              <a-button class="ml-2" size="small" type="primary" @click="editAssemblyTimeBatch(selectedRows)">确认 </a-button>
+            </template>
+            <a-button v-show="activeKey !== '0' && selectedRows.length > 0"> 批量修改组装时间</a-button>
+          </a-popover>
         </template>
         <template #buttons-right>
           <a-button v-show="hasEdit" type="primary" @click="saveTable">保存编辑</a-button>
