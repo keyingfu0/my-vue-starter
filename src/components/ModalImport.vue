@@ -25,7 +25,7 @@ const current = ref(0)
 
 function getInitialButtonData() {
   return {
-    1: {
+    0: {
       disabled: true,
       loading: false,
     },
@@ -43,12 +43,13 @@ const prev = () => {
 }
 
 // 导入完成后提示并解禁按钮, 自动跳转到下一步
+// TODO 这里用0去索引是不对的, 万一步骤改了呢, 要换种方式
 watch(
-  () => nextButtonState['1'].loading,
+  () => nextButtonState['0'].loading,
   (newVal) => {
-    if (!newVal && current.value === 1) {
+    if (!newVal && current.value === 0) {
       message.success('数据已导入!')
-      nextButtonState['1'].disabled = false
+      nextButtonState['0'].disabled = false
       next()
     }
   },
@@ -57,44 +58,42 @@ watch(
 const importRef = ref(null)
 const uploading = ref(false)
 
-const steps = [
-  {
-    title: '下载模板',
-    content: {
-      template: `
-        <div class="mt-4 text-lg flex justify-center">
-        <!--       <span @click="handleDownload">点击下载excel模板</span>-->
-        <!--        TODO  link 可以换成link类型的a-button-->
-        <a type="link" @click="handleDownload"
-           :href="url"
-           download="订单导入.xlsx">点击下载订单导入模板
-        </a>
-        </div>`,
-      setup() {
-        function handleDownload() {
-          next()
-          // saveAs('http://47.98.59.211:6247/Content/template/ProductionOrderTemplate.xls', '订单模板.xls')
-        }
+const DownloadLink = {
+  template: `
+    <div class="mt-4 text-lg flex justify-center">
+    <!--       <span @click="handleDownload">点击下载excel模板</span>-->
+    <!--        TODO  link 可以换成link类型的a-button-->
+    <a type="link" @click="handleDownload"
+       :href="url"
+       download="订单导入.xlsx">点击下载订单导入模板
+    </a>
+    </div>`,
+  setup() {
+    function handleDownload() {
+      next()
+      // saveAs('http://47.98.59.211:6247/Content/template/ProductionOrderTemplate.xls', '订单模板.xls')
+    }
 
-        return {
-          handleDownload,
-          url: `${import.meta.env.VITE_APP_BASE_URL}/Content/template/ApsSalesOrderImport.xlsx`,
-        }
-        // return
-      },
-    },
+    return {
+      handleDownload,
+      url: `${import.meta.env.VITE_APP_BASE_URL}/Content/template/ApsSalesOrderImport.xlsx`,
+    }
+    // return
   },
+}
+const steps = [
   {
     title: '导入excel数据',
     // content: '从excel文件中导入数据',
     content: {
       template: `
         <a-alert class="mt-4" message="请保持列名和模板一致,否则无法导入数据" type="info" show-icon banner/>
+        <DownloadLink/>
         <ImportExcel ref="importRef" v-model:data="excelData" :next="next"
                      action="/ApsSalesOrderInfo/SalesOrderInfoImport"
                      v-model:uploading="uploading"
-                     v-model:is-loading="nextButtonState['1'].loading"></ImportExcel>`,
-      components: { ImportExcel, AAlert },
+                     v-model:is-loading="nextButtonState['0'].loading"></ImportExcel>`,
+      components: { ImportExcel, DownloadLink, AAlert },
       setup() {
         return {
           next,
