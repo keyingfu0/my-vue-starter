@@ -231,6 +231,10 @@ const materialTable = {
     {
       field: 'fATPCount',
       title: 'ATP',
+      // return 'text-red-300' class when cellValue < 0
+      className: ({ row }) => {
+        return row.fATPCount < 0 ? 'text-red-500' : ''
+      },
     },
     {
       field: 'OrderList',
@@ -399,8 +403,8 @@ async function handleStoreUniformityCheck() {
 }
 
 const rowClassName = ({ row }) => {
-  if (row.fGrossCount - row.fbalanceCount < 0) {
-    return 'bg-red-100'
+  if (row.fbalanceCount - row.fGrossCount < 0) {
+    return 'bg-red-200'
   }
 }
 
@@ -421,12 +425,12 @@ const StoreUniformityCheck = {
       title: '期初结余',
     },
     {
-      field: '毛需求-期初结余',
-      title: '毛需求-期初结余',
+      field: '期初结余-毛需求',
+      title: '期初结余-毛需求',
       sortable: true,
       sortType: 'number',
       formatter: ({ row }) => {
-        return row.fGrossCount - row.fbalanceCount
+        return row.fbalanceCount - row.fGrossCount
       },
     },
   ],
@@ -463,7 +467,7 @@ async function handleStoreAtpCheck() {
 
 const rowClassNameAtp = ({ row }) => {
   if (row.fATPCount < 0) {
-    return 'bg-red-100'
+    return 'bg-red-200'
   }
 }
 
