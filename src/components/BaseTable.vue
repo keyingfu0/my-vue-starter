@@ -25,7 +25,7 @@ const props = defineProps({
   },
   requestConfig: {
     type: Array,
-    defaul: null,
+    default: null,
   },
   // /**
   //  * 表格数据是否新鲜
