@@ -12,6 +12,7 @@ import message from 'ant-design-vue/es/message'
 import 'ant-design-vue/es/message/style/index.css'
 import 'ant-design-vue/es/alert/style/index.css'
 import 'ant-design-vue/es/spin/style/index.css'
+import BaseModal from '@/components/BaseModal.vue'
 
 const props = defineProps({
   visible: {
@@ -177,8 +178,9 @@ async function handleFinish() {
 </script>
 
 <template>
-  <a-modal class="flex justify-center" :visible="visible" title="Excel导入" width="auto" @update:visible="emit('update:visible', $event)">
-    <div class="min-w-[1000px]">
+  <!--    class="flex justify-center"-->
+  <BaseModal :visible="visible" title="Excel导入" @update:visible="emit('update:visible', $event)">
+    <div>
       <a-steps :current="current">
         <a-step v-for="item in steps" :key="item.title" :title="item.title" />
       </a-steps>
@@ -196,5 +198,5 @@ async function handleFinish() {
         <a-button v-if="current === steps.length - 1" :loading="uploading" type="primary" @click="handleFinish"> 完成 </a-button>
       </div>
     </template>
-  </a-modal>
+  </BaseModal>
 </template>

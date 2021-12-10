@@ -19,6 +19,7 @@ specifiers:
   '@vitejs/plugin-vue': ^1.6.1
   '@vue/compiler-dom': ^3.2.24
   '@vue/compiler-sfc': ^3.2.10
+  '@vueuse/core': ^7.2.2
   ant-design-vue: ^3.0.0-alpha.13
   autoprefixer: ^10.3.4
   axios: ^0.21.4
@@ -56,6 +57,7 @@ specifiers:
 dependencies:
   '@ant-design/icons-vue': 6.0.1_vue@3.2.22
   '@rollup/plugin-commonjs': 21.0.1
+  '@vueuse/core': 7.2.2_vue@3.2.22
   ant-design-vue: 3.0.0-alpha.13_d993d7eb47a5c30940fe6565e4c82216
   axios: 0.21.4
   daisyui: 1.16.2
@@ -2037,8 +2039,39 @@ packages:
       vue-demi: 0.12.1_vue@3.2.22
     dev: false
 
+  /@vueuse/core/7.2.2_vue@3.2.22:
+    resolution: {integrity: sha512-T9oksrPflNhsgG/Y/7IeCSmITPZ0VKDnTpK8y7SQl4ZIdLIL8L7fJyhJEgSMWyo497j/XK3RKFkOTh4GFTVeIQ==}
+    peerDependencies:
+      '@vue/composition-api': ^1.1.0
+      vue: ^2.6.0 || ^3.2.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
+      vue:
+        optional: true
+    dependencies:
+      '@vueuse/shared': 7.2.2_vue@3.2.22
+      vue: 3.2.22
+      vue-demi: 0.12.1_vue@3.2.22
+    dev: false
+
   /@vueuse/shared/6.1.0_vue@3.2.22:
     resolution: {integrity: sha512-teW0TUQryGnEprHeOI6oH8NPVJBirknxksEiNCtdEjIi8W7JSTg8JPO+e1XlGI6ly24NDlDXUDYaHJayiaXjuw==}
+    peerDependencies:
+      '@vue/composition-api': ^1.1.0
+      vue: ^2.6.0 || ^3.2.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
+      vue:
+        optional: true
+    dependencies:
+      vue: 3.2.22
+      vue-demi: 0.12.1_vue@3.2.22
+    dev: false
+
+  /@vueuse/shared/7.2.2_vue@3.2.22:
+    resolution: {integrity: sha512-9vevEvvQgx4snSrDfZ5BFd7FmlIl9rwTtr8ySzPZhZQslx6lbcsXK3Q97I06Fv8S2TedR//X9fn2QbNtbFmdog==}
     peerDependencies:
       '@vue/composition-api': ^1.1.0
       vue: ^2.6.0 || ^3.2.0

@@ -25,6 +25,7 @@ import { time } from '@/utils/time.js'
 import SelectWorkOrder from '@/components/SelectWorkOrder.vue'
 import useTableEdit from '@/composables/useTableEdit'
 import { saveAs } from 'file-saver'
+import BaseModal from '@/components/BaseModal.vue'
 
 // const tableData = ref()
 
@@ -375,14 +376,14 @@ const materialTableEdit = useTableEdit(associatedWorkOrder, {
   tableRef: materialTableRef,
 })
 
-//#region ### 删除 ========================================
-function handleDeleteRelate(row) {
+//#region ### 删除组装单 ========================================
+function deleteAssemblyOrders(cApsAssembleOrderNos) {
   useRequest(
     async () => {
       return request('/ApsAssembleOrderInfo/DeleteApsAssembleOrderInfoByNos', {
         method: 'POST',
         data: {
-          cApsAssembleOrderNos: [row.cRelateNo],
+          cApsAssembleOrderNos,
         },
       })
     },
@@ -393,6 +394,11 @@ function handleDeleteRelate(row) {
       },
     },
   )
+}
+
+function deleteAssemblyOrdersInBulk(rows) {
+  const cApsAssembleOrderNos = map(rows, (row) => row.cRelateNo)
+  deleteAssemblyOrders(cApsAssembleOrderNos)
 }
 
 //#endregion
@@ -1110,6 +1116,9 @@ async function editAssemblyTimeBatch(selectedRows) {
             </template>
             <a-button v-show="activeKey !== '0' && selectedRows.length > 0"> 批量修改组装时间</a-button>
           </a-popover>
+          <a-popconfirm cancel-text="取消" ok-text="确认" title="确认删除?" @confirm="deleteAssemblyOrdersInBulk(selectedRows)">
+            <a-button v-show="selectedRows.length > 0" danger type="primary">批量删除组装单</a-button>
+          </a-popconfirm>
         </template>
         <template #buttons-right>
           <a-button v-show="hasEdit" type="primary" @click="saveTable">保存编辑</a-button>
@@ -1152,7 +1161,13 @@ async function editAssemblyTimeBatch(selectedRows) {
             <div class="group">
               <a-button type="link" @click="showAssociatedAssemblyOrder(row)">{{ row.cRelateNo }}</a-button>
 
-              <a-popconfirm class="group-hover:inline-block hidden" cancel-text="取消" ok-text="确认" title="确认删除?" @confirm="handleDeleteRelate(row)">
+              <a-popconfirm
+                class="group-hover:inline-block hidden"
+                cancel-text="取消"
+                ok-text="确认"
+                title="确认删除?"
+                @confirm="deleteAssemblyOrders(row.cRelateNo)"
+              >
                 <delete-outlined v-if="row.cRelateNo" class="-ml-2 -translate-y-1 text-red-400" />
               </a-popconfirm>
             </div>
@@ -1224,15 +1239,15 @@ async function editAssemblyTimeBatch(selectedRows) {
     <!--  导入对话框 -->
     <ModalImport :key="modalKey" v-model:visible="visible" @finish="finishImport"></ModalImport>
     <!--    齐套性检测对话框 -->
-    <a-modal v-model:visible="visibleCheckModal" class="flex justify-center" :footer="null" title="仓库齐套性检测" width="auto">
-      <div class="min-w-[1200px]">
+    <BaseModal v-model:visible="visibleCheckModal" :footer="null" title="仓库齐套性检测">
+      <div class="w-full">
         <BaseTable id="storeUniformityCheck" ref="storeUniformityCheck" :has-checkbox="false" row-id="cProductNo" v-bind="StoreUniformityCheck" />
       </div>
-    </a-modal>
+    </BaseModal>
 
     <!--    ATP齐套性检测 -->
-    <a-modal v-model:visible="visibleCheckAtpModal" class="flex justify-center" :footer="null" title="ATP齐套性检测" width="auto">
-      <div class="min-w-[1200px]">
+    <BaseModal v-model:visible="visibleCheckAtpModal" :footer="null" title="ATP齐套性检测">
+      <div class="w-full">
         <a-alert class="mb-4" banner message="请输入一个或多个BOM编码进行查询（按回车添加）" show-icon type="info" />
         <div class="flex">
           <a-select v-model:value="bomNos" :options="[]" mode="tags" placeholder="请输入BOM编码" style="width: 70%"></a-select>
@@ -1250,17 +1265,19 @@ async function editAssemblyTimeBatch(selectedRows) {
           v-bind="storeAtpCheckTable"
         />
       </div>
-    </a-modal>
+    </BaseModal>
     <!--    关联组装单 -->
-    <a-modal v-model:visible="visibleAssemblyOrderModal" class="flex justify-center" :footer="null" title="关联组装单" width="auto">
-      <a-button type="primary" @click="print">打印组装单</a-button>
-      <div ref="assemblyOrderLists" class="min-w-[1200px]">
-        <h2 class="font-bold text-2xl mt-4 text-center">订单列表</h2>
-        <BaseTable id="assemblyOrder2" ref="assemblyOrder2" :has-checkbox="false" row-id="cProductNo" v-bind="assemblyOrderTable2"></BaseTable>
-        <h2 class="font-bold text-2xl mt-4 text-center">物料需求列表</h2>
-        <BaseTable id="assemblyOrder" ref="assemblyOrder" :has-checkbox="false" row-id="cProductNo" v-bind="assemblyOrderTable"></BaseTable>
-        <!--        <BaseTable id="assemblyOrder2" ref="assemblyOrder2" :has-checkbox="false" row-id="cProductNo" v-bind="assemblyOrderTable2" />-->
+    <BaseModal v-model:visible="visibleAssemblyOrderModal" :footer="null" title="关联组装单">
+      <div class="w-full">
+        <a-button type="primary" @click="print">打印组装单</a-button>
+        <div ref="assemblyOrderLists">
+          <h2 class="font-bold text-2xl mt-4 text-center">订单列表</h2>
+          <BaseTable id="assemblyOrder2" ref="assemblyOrder2" :has-checkbox="false" row-id="cProductNo" v-bind="assemblyOrderTable2"></BaseTable>
+          <h2 class="font-bold text-2xl mt-4 text-center">物料需求列表</h2>
+          <BaseTable id="assemblyOrder" ref="assemblyOrder" :has-checkbox="false" row-id="cProductNo" v-bind="assemblyOrderTable"></BaseTable>
+          <!--        <BaseTable id="assemblyOrder2" ref="assemblyOrder2" :has-checkbox="false" row-id="cProductNo" v-bind="assemblyOrderTable2" />-->
+        </div>
       </div>
-    </a-modal>
+    </BaseModal>
   </a-config-provider>
 </template>
