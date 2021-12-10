@@ -1045,9 +1045,9 @@ function exportExcel() {
     },
     {
       onSuccess(res) {
-        message.success('工单计划导出成功!')
         // TODO 更换下载地址
         res.href && saveAs(getAbsoluteUrl(res.href))
+        message.success('工单计划导出成功!')
       },
     },
   )
@@ -1239,14 +1239,20 @@ async function editAssemblyTimeBatch(selectedRows) {
     <!--  导入对话框 -->
     <ModalImport :key="modalKey" v-model:visible="visible" @finish="finishImport"></ModalImport>
     <!--    齐套性检测对话框 -->
-    <BaseModal v-model:visible="visibleCheckModal" :footer="null" title="仓库齐套性检测">
-      <div class="w-full">
-        <BaseTable id="storeUniformityCheck" ref="storeUniformityCheck" :has-checkbox="false" row-id="cProductNo" v-bind="StoreUniformityCheck" />
-      </div>
+    <BaseModal v-model:visible="visibleCheckModal" title="仓库齐套性检测">
+      <BaseTable
+        id="storeUniformityCheck"
+        ref="storeUniformityCheck"
+        :has-checkbox="false"
+        :max-height-config="{}"
+        row-id="cProductNo"
+        v-bind="StoreUniformityCheck"
+      />
+      <!--          :sync-resize="visibleCheckModal"-->
     </BaseModal>
 
     <!--    ATP齐套性检测 -->
-    <BaseModal v-model:visible="visibleCheckAtpModal" :footer="null" title="ATP齐套性检测">
+    <BaseModal v-model:visible="visibleCheckAtpModal" title="ATP齐套性检测">
       <div class="w-full">
         <a-alert class="mb-4" banner message="请输入一个或多个BOM编码进行查询（按回车添加）" show-icon type="info" />
         <div class="flex">
@@ -1261,20 +1267,36 @@ async function editAssemblyTimeBatch(selectedRows) {
           ref="storeAtpCheck"
           v-model:reloading="storeAtpCheckReloading"
           :has-checkbox="false"
+          :max-height-config="{ offset: 180 }"
           row-id="cProductNo"
           v-bind="storeAtpCheckTable"
         />
       </div>
     </BaseModal>
     <!--    关联组装单 -->
-    <BaseModal v-model:visible="visibleAssemblyOrderModal" :footer="null" title="关联组装单">
+    <BaseModal v-model:visible="visibleAssemblyOrderModal" min-height="700" title="关联组装单">
       <div class="w-full">
         <a-button type="primary" @click="print">打印组装单</a-button>
         <div ref="assemblyOrderLists">
           <h2 class="font-bold text-2xl mt-4 text-center">订单列表</h2>
-          <BaseTable id="assemblyOrder2" ref="assemblyOrder2" :has-checkbox="false" row-id="cProductNo" v-bind="assemblyOrderTable2"></BaseTable>
+          <BaseTable
+            id="assemblyOrder2"
+            ref="assemblyOrder2"
+            :has-checkbox="false"
+            max-height="300"
+            row-id="cProductNo"
+            v-bind="assemblyOrderTable2"
+          ></BaseTable>
           <h2 class="font-bold text-2xl mt-4 text-center">物料需求列表</h2>
-          <BaseTable id="assemblyOrder" ref="assemblyOrder" :has-checkbox="false" row-id="cProductNo" v-bind="assemblyOrderTable"></BaseTable>
+          <BaseTable
+            id="assemblyOrder"
+            ref="assemblyOrder"
+            :has-checkbox="false"
+            :max-height-config="{ offset: 380 }"
+            max-height="400"
+            row-id="cProductNo"
+            v-bind="assemblyOrderTable"
+          ></BaseTable>
           <!--        <BaseTable id="assemblyOrder2" ref="assemblyOrder2" :has-checkbox="false" row-id="cProductNo" v-bind="assemblyOrderTable2" />-->
         </div>
       </div>

@@ -1,10 +1,11 @@
 <script setup>
-import { h, nextTick, reactive, ref, resolveComponent, shallowRef, watch } from 'vue'
+import { computed, h, inject, nextTick, reactive, ref, resolveComponent, shallowRef, watch } from 'vue'
 import message from 'ant-design-vue/es/message'
 import 'ant-design-vue/es/message/style/index.css'
 import useRequest, { useList } from '@/utils/useRequest'
 import request from '@/utils/request'
 import { ReloadOutlined } from '@ant-design/icons-vue'
+import { useResizeObserver } from '@vueuse/core/index'
 
 const props = defineProps({
   columnSchema: {
@@ -53,6 +54,18 @@ const props = defineProps({
   showOverflow: {
     type: String,
     default: 'tooltip',
+  },
+
+  maxHeight: {
+    type: String,
+    default: '550',
+  },
+  /**
+   * 动态计算最大高度
+   */
+  maxHeightConfig: {
+    type: Object,
+    default: null,
   },
 })
 
@@ -189,6 +202,58 @@ function getTableDataLength() {
 
 //#endregion
 
+//#region ## 计算最大高度 ==================================================
+const tableMaxHeight = ref(props.maxHeight)
+//
+// function setTableMaxHeight(val) {
+//   tableMaxHeight.value = val
+// }
+
+function handleZoom(el, options = {}) {
+  const { offset = 90 } = options
+  const $body = el.querySelector('.vxe-modal--content')
+  const height = $body.offsetHeight
+  console.log('-> height', height)
+  const res = height - offset
+  if (res > 0) {
+    tableMaxHeight.value = res
+  }
+}
+
+if (props.maxHeightConfig) {
+  // const {handleZoom} = props.maxHeightConfig
+  const onZoom = inject('onZoom')
+  if (onZoom) {
+    onZoom((el) => {
+      handleZoom(el, props.maxHeightConfig)
+    })
+  }
+  // ;(async function calcMaxHeight() {
+  //   const { el = '.vxe-modal--content', margin = 10 } = props.maxHeightConfig
+  //
+  //   if (el) {
+  //     await nextTick()
+  //     const $parent = table.value.$el.closest(el)
+  //     console.log('-> $parent', $parent)
+  //     const toolbarHeight = props.hasToolbar ? 52 : 0
+  //     // const initialHeight =
+  //     useResizeObserver($parent, (entries) => {
+  //       const entry = entries[0]
+  //       const { height } = entry.contentRect
+  //       if (height < parseInt(tableMaxHeight.value)) {
+  //         return
+  //       }
+  //       console.log('-> height', height)
+  //       // // if()
+  //       // tableMaxHeight.value = Number(height) - toolbarHeight - margin
+  //       // console.log('-> tableMaxHeight', tableMaxHeight.value)
+  //     })
+  //   }
+  // })()
+}
+
+//#endregion
+
 defineExpose({
   getSelectedRows,
   refresh: refreshTableData,
@@ -236,10 +301,10 @@ defineExpose({
     :custom-config="{ storage: true }"
     :data="data.List"
     :loading="loading"
+    :max-height="tableMaxHeight"
     :print-config="{}"
     :show-overflow="showOverflow"
     highlight-hover-row
-    max-height="550"
     row-id="id"
     v-bind="$attrs"
     @checkbox-change="handleCheckboxChange"
@@ -294,3 +359,11 @@ defineExpose({
     <!--    @page-change="handlePageChange"-->
   </vxe-pager>
 </template>
+
+<style>
+/*NOTE 禁止滚动到底之后继续滚动*/
+.vxe-table--body-wrapper {
+  @apply overscroll-y-contain;
+  /*overscroll-y:*/
+}
+</style>
