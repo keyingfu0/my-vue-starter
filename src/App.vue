@@ -758,7 +758,7 @@ async function assemblyOrderReq(row) {
 
 const assemblyOrderTable = {
   hasToolbar: false,
-  showOverflow: false,
+  showOverflow: null,
   columnSchema: [
     {
       field: 'cProductName',
@@ -809,31 +809,38 @@ const assemblyOrderTable2 = {
     {
       field: 'cSalesOrderNo',
       title: '订单编号',
+      width: 180,
     },
     {
       field: 'cBomNo',
       title: '订单BOM编号',
+      width: 180,
     },
     {
       field: 'cProductNo',
       title: '物料编号',
+      width: 180,
     },
     {
       field: 'cProductName',
       title: '物料名称',
+      width: 180,
     },
     {
       field: 'cCustomerName',
       title: '客户名',
+      width: 103,
     },
     {
       field: 'fCount',
       title: '数量',
+      width: 86,
     },
     {
       field: 'tProduceBeginDate',
       title: '组装日期',
       formatter: 'formatDate',
+      width: 100,
     },
   ],
   customPreset: ['initial-empty-list'],
@@ -1124,11 +1131,11 @@ async function editAssemblyTimeBatch(selectedRows) {
           <!--           TODO 无效因为有default slot-->
           <vxe-column :edit-render="{ placeholder: '请选择组装日期' }" field="tProduceBeginDate" show-overflow="tooltip" title="组装开始时间">
             <template #default="{ row }">
-              <tempalte v-if="row.tProduceBeginDate">
+              <template v-if="row.tProduceBeginDate">
                 <span>
                   {{ formatTime(row.tProduceBeginDate) }}
                 </span>
-              </tempalte>
+              </template>
               <template v-else>
                 <span class="text-gray-300">请选择组装日期</span>
               </template>
