@@ -8,6 +8,8 @@ import BaseTable from '@/components/BaseTable.vue'
 import ModalImport from '@/components/ModalImport.vue'
 import message from 'ant-design-vue/es/message'
 import 'ant-design-vue/es/message/style/index.css'
+import ATag from 'ant-design-vue/es/tag'
+import 'ant-design-vue/es/tag/style/index.css'
 
 import Modal from 'ant-design-vue/es/modal'
 import 'ant-design-vue/es/modal/style/index.css'
@@ -199,6 +201,41 @@ const salesOrderTable = {
 //#endregion
 
 //#region ## 物料需求表 ==================================================
+const selectWorkOrderVisible = ref(false)
+
+// TODO 可以优化
+const workOrderComponent = ({ row }) => {
+  let vnode
+  if (row.OrderList.length) {
+    const text = row.OrderList.map((item, index) => {
+      console.log('-> item', item)
+      const { label, fPlanningCount, fIsReleaseOrder } = item
+      const statusText = fIsReleaseOrder ? '已下达' : '未下达'
+      const statusColor = fIsReleaseOrder ? 'success' : 'default'
+      const tag = h(ATag, { color: statusColor }, () => statusText)
+      const className = fIsReleaseOrder ? 'text-green-400' : 'text-gray-400'
+      const lineBreak = index === 0 ? '' : '\n'
+      return h('span', { class: [className, 'leading-loose'] }, [lineBreak, tag, `${label}（${fPlanningCount}件）`])
+    })
+    vnode = h('span', null, text)
+  } else {
+    vnode = h('span', { class: 'text-gray-300' }, '请选择关联工单')
+  }
+
+  return h(
+    'div',
+    null,
+    // row.OrderListVal,
+    [
+      vnode,
+      // row.cRelateNo,
+      h(EditOutlined, {
+        class: '-translate-y-0.5 text-green-400 ml-2',
+      }),
+    ],
+  )
+}
+
 const materialTable = {
   columnSchema: [
     {
@@ -258,34 +295,34 @@ const materialTable = {
         // ],
       },
       slots: {
+        // TODO 这样每次都会重新渲染不好, 改为手动模式
         edit: (props) => {
-          return h(SelectWorkOrder, {
-            row: props.row,
-            activeWeek: activeWeek.value,
-            onChange: materialTableEdit.handleCellChange,
-          })
-        },
-        default: ({ row }) => {
           return h(
-            'div',
-            null,
-            // row.OrderListVal,
-            [
-              row.OrderList.length
-                ? row.OrderList.map((item) => {
-                    console.log('-> item', item)
-                    const { label, fPlanningCount, fIsReleaseOrder } = item
-                    const statusText = fIsReleaseOrder ? '，已下达' : '，未下达'
-                    return `${label}（${fPlanningCount}件${statusText}）\n`
-                  }).join(',')
-                : h('span', { class: 'text-gray-300' }, '请选择关联工单'),
-              // row.cRelateNo,
-              h(EditOutlined, {
-                class: '-translate-y-0.5 text-green-400 ml-2',
-              }),
-            ],
+            SelectWorkOrder,
+            {
+              row: props.row,
+              activeWeek: activeWeek.value,
+              visible: selectWorkOrderVisible.value,
+              'onUpdate:visible': async (value) => {
+                selectWorkOrderVisible.value = value
+                if (!value) {
+                  await nextTick()
+                  materialTableRef.value.clearActived()
+                }
+              },
+              'onUpdate:row': (value) => {
+                console.log('-> props.row', props.row)
+                props.row.OrderList = value
+              },
+              key: props.row.id,
+              onChange: materialTableEdit.handleCellChange,
+            },
+            {
+              default: workOrderComponent,
+            },
           )
         },
+        default: workOrderComponent,
       },
     },
     {

@@ -198,6 +198,9 @@ defineExpose({
   print(args) {
     table.value.print(args)
   },
+  clearActived: async () => {
+    return table.value.clearActived()
+  },
 })
 </script>
 

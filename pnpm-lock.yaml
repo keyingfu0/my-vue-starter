@@ -17,6 +17,7 @@ specifiers:
   '@tailwindcss/typography': ^0.4.1
   '@types/tailwindcss': ^2.2.1
   '@vitejs/plugin-vue': ^1.6.1
+  '@vue/compiler-dom': ^3.2.24
   '@vue/compiler-sfc': ^3.2.10
   ant-design-vue: ^3.0.0-alpha.13
   autoprefixer: ^10.3.4
@@ -88,6 +89,7 @@ devDependencies:
   '@tailwindcss/typography': 0.4.1_tailwindcss@2.2.19
   '@types/tailwindcss': 2.2.4
   '@vitejs/plugin-vue': 1.10.0_vite@2.6.14
+  '@vue/compiler-dom': 3.2.24
   '@vue/compiler-sfc': 3.2.22
   autoprefixer: 10.4.0
   babel-plugin-import: 1.13.3
@@ -1926,11 +1928,27 @@ packages:
       estree-walker: 2.0.2
       source-map: 0.6.1
 
+  /@vue/compiler-core/3.2.24:
+    resolution: {integrity: sha512-A0SxB2HAggKzP57LDin5gfgWOTwFyGCtQ5MTMNBADnfQYALWnYuC8kMI0DhRSplGTWRvn9Z2DAnG8f35BnojuA==}
+    dependencies:
+      '@babel/parser': 7.16.4
+      '@vue/shared': 3.2.24
+      estree-walker: 2.0.2
+      source-map: 0.6.1
+    dev: true
+
   /@vue/compiler-dom/3.2.22:
     resolution: {integrity: sha512-VZdsw/VuO1ODs8K7NQwnMQzKITDkIFlYYC03SVnunuf6eNRxBPEonSyqbWNoo6qNaHAEBTG6VVcZC5xC9bAx1g==}
     dependencies:
       '@vue/compiler-core': 3.2.22
       '@vue/shared': 3.2.22
+
+  /@vue/compiler-dom/3.2.24:
+    resolution: {integrity: sha512-KQEm8r0JFsrNNIfbD28pcwMvHpcJcwjVR1XWFcD0yyQ8eREd7IXhT7J6j7iNCSE/TIo78NOvkwbyX+lnIm836w==}
+    dependencies:
+      '@vue/compiler-core': 3.2.24
+      '@vue/shared': 3.2.24
+    dev: true
 
   /@vue/compiler-sfc/3.2.22:
     resolution: {integrity: sha512-tWRQ5ge1tsTDhUwHgueicKJ8rYm6WUVAPTaIpFW3GSwZKcOEJ2rXdfkHFShNVGupeRALz2ET2H84OL0GeRxY0A==}
@@ -1998,6 +2016,10 @@ packages:
 
   /@vue/shared/3.2.22:
     resolution: {integrity: sha512-qWVav014mpjEtbWbEgl0q9pEyrrIySKum8UVYjwhC6njrKzknLZPvfuYdQyVbApsqr94tf/3dP4pCuZmmjdCWQ==}
+
+  /@vue/shared/3.2.24:
+    resolution: {integrity: sha512-BUgRiZCkCrqDps5aQ9av05xcge3rn092ztKIh17tHkeEFgP4zfXMQWBA2zfdoCdCEdBL26xtOv+FZYiOp9RUDA==}
+    dev: true
 
   /@vueuse/core/6.1.0_vue@3.2.22:
     resolution: {integrity: sha512-6KienU5QOWKuDqvHytep14274IGKyLlACzXjifOrgDQMkqvWZIUnDhpckT/1+O8n8DN59d5wzzICZI/2sfGCyg==}

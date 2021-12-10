@@ -48,6 +48,7 @@
     "@tailwindcss/typography": "^0.4.1",
     "@types/tailwindcss": "^2.2.1",
     "@vitejs/plugin-vue": "^1.6.1",
+    "@vue/compiler-dom": "^3.2.24",
     "@vue/compiler-sfc": "^3.2.10",
     "autoprefixer": "^10.3.4",
     "babel-plugin-import": "^1.13.3",
