@@ -1250,7 +1250,7 @@ function disabledDateMethod(params) {
               ></vxe-input>
             </template>
           </vxe-column>
-          <vxe-column v-slot="{ row }" field="cRelateNo" show-overflow="tooltip" title="关联组装单">
+          <vxe-column v-slot="{ row }" field="cRelateNo" show-overflow="tooltip" title="关联组装单" width="210">
             <div class="group">
               <a-button type="link" @click="showAssociatedAssemblyOrder(row)">{{ row.cRelateNo }}</a-button>
 
