@@ -295,6 +295,10 @@ const materialTable = {
       title: '零部件名字',
     },
     {
+      field: 'cProductNo',
+      title: '零部件编号',
+    },
+    {
       field: 'fGrossCount',
       title: '毛需求',
     },
@@ -502,6 +506,10 @@ const StoreUniformityCheck = {
       title: '零部件名字',
     },
     {
+      field: 'cProductNo',
+      title: '零部件编号',
+    },
+    {
       field: 'fGrossCount',
       title: '毛需求',
     },
@@ -563,6 +571,10 @@ const storeAtpCheckTable = {
     {
       field: 'cProductName',
       title: '零部件名字',
+    },
+    {
+      field: 'cProductNo',
+      title: '零部件编号',
     },
     {
       field: 'fGrossCount',
@@ -808,6 +820,10 @@ const assemblyOrderTable = {
     {
       field: 'cProductName',
       title: '零部件名字',
+    },
+    {
+      field: 'cProductNo',
+      title: '零部件编号',
     },
     {
       field: 'fGrossCount',
