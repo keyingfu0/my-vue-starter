@@ -1,12 +1,12 @@
-import { defineConfig } from 'vite'
+import {defineConfig} from 'vite'
 import vue from '@vitejs/plugin-vue'
 // import ElementPlus from 'unplugin-element-plus/vite'
-import { resolve } from 'path'
+import {resolve} from 'path'
 import styleImport from 'vite-plugin-style-import'
 import babel from '@rollup/plugin-babel'
 import Components from 'unplugin-vue-components/vite'
-import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
-import { visualizer } from 'rollup-plugin-visualizer'
+import {AntDesignVueResolver} from 'unplugin-vue-components/resolvers'
+import {visualizer} from 'rollup-plugin-visualizer'
 import nodeResolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import vitePluginImp from 'vite-plugin-imp'
@@ -17,11 +17,20 @@ export default defineConfig({
       less: {
         javascriptEnabled: true,
       },
-      scss: { charset: false },
+      scss: {charset: false},
     },
   },
   build: {
     // sourcemap: true,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        //生产环境时移除console
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
+
   },
   plugins: [
     vue(),
