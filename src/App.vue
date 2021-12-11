@@ -69,7 +69,9 @@ const weeks = computed(() => {
   const end = now.value.endOf('week')
   const currentWeek = {
     start: start.format('YYYY-MM-DD HH:mm:ss'),
+    // startObj: start,
     end: end.format('YYYY-MM-DD HH:mm:ss'),
+    // endObj: end,
   }
 
   const nextWeeks = [1, 2].map((num) => {
@@ -82,6 +84,43 @@ const weeks = computed(() => {
   return [currentWeek, ...nextWeeks]
 })
 
+/**
+ * get dates between start and end
+ * @param {dayjs.Dayjs} start
+ * @param{dayjs.Dayjs} end
+ * @return {dayjs.Dayjs[]}
+ */
+function getDatesBetween(start, end) {
+  const dates = []
+  let current = start
+  while (current.isBefore(end)) {
+    dates.push(current)
+    current = current.add(1, 'day')
+  }
+  return [...dates]
+}
+
+const validDates = computed(() => {
+  const { start } = weeks.value[0]
+  const { end } = weeks.value[2]
+  const dates = getDatesBetween(time(start), time(end))
+  return dates.map((date) => date.toString().slice(0, 16))
+
+  // return []
+})
+
+const validDate = computed(() => {
+  const { start } = weeks.value[0]
+  const { end } = weeks.value[2]
+  return {
+    min: time(start).toDate(),
+    max: time(end).toDate(),
+  }
+
+  // return []
+})
+
+console.log('-> validDate', validDate)
 /**
  * 用于查询的周时间参数
  * @type {ComputedRef<[{fType: number}, ...{tStartDateBegin: any, tStartDateEnd: any, fType}[]]>}
@@ -1067,6 +1106,16 @@ async function editAssemblyTimeBatch(selectedRows) {
 }
 
 //#endregion
+
+//#region ## 禁用非法日期选择 ==================================================
+function disabledDateMethod(params) {
+  const { date } = params
+  const day = time(date)
+  const dateStr = day.toString().slice(0, 16)
+  return !validDates.value.includes(dateStr)
+}
+
+//#endregion
 </script>
 
 <template>
@@ -1093,7 +1142,7 @@ async function editAssemblyTimeBatch(selectedRows) {
       >
         <template #buttons-left="{ selectedRows }">
           <a-button @click="showModal">excel导入</a-button>
-
+          <a-divider type="vertical" />
           <a-button v-show="activeKey !== '0'" @click="handleStoreUniformityCheck">仓库齐套性检测</a-button>
           <a-button v-show="activeKey !== '0'" @click="generateAssemblyOrder">生成组装单</a-button>
           <a-button v-show="activeKey !== '0'" @click="handleStoreAtpCheck">ATP齐套性检测</a-button>
@@ -1111,7 +1160,15 @@ async function editAssemblyTimeBatch(selectedRows) {
 
           <a-popover v-model:visible="editAssemblyTimeBatchVisible" placement="bottom" trigger="click">
             <template #content>
-              <vxe-input v-model="produceBeginDateBatch" parse-format="yyyy-dd-MM" placeholder="请选择组装日期" type="date"></vxe-input>
+              <vxe-input
+                v-model="produceBeginDateBatch"
+                :disabled-method="disabledDateMethod"
+                :max-date="validDate.max"
+                :min-date="validDate.min"
+                parse-format="yyyy-MM-dd"
+                placeholder="请选择组装日期"
+                type="date"
+              ></vxe-input>
               <a-button class="ml-2" size="small" type="primary" @click="editAssemblyTimeBatch(selectedRows)">确认 </a-button>
             </template>
             <a-button v-show="activeKey !== '0' && selectedRows.length > 0"> 批量修改组装时间</a-button>
@@ -1154,7 +1211,16 @@ async function editAssemblyTimeBatch(selectedRows) {
             <template #edit="{ row, column }">
               <!--  ? ant-design-vue的update和change事件均无效, 不知道原因... -->
               <!--                      <a-date-picker :value="dayjs(row.tProduceBeginDate)" @update:value="log" />-->
-              <vxe-input v-model="row.tProduceBeginDate" placeholder="请选择组装日期" transfer type="date" @change="handleCellChange(row, column)"></vxe-input>
+              <vxe-input
+                v-model="row.tProduceBeginDate"
+                :disabled-method="disabledDateMethod"
+                :max-date="validDate.max"
+                :min-date="validDate.min"
+                placeholder="请选择组装日期"
+                transfer
+                type="date"
+                @change="handleCellChange(row, column)"
+              ></vxe-input>
             </template>
           </vxe-column>
           <vxe-column v-slot="{ row }" field="cRelateNo" show-overflow="tooltip" title="关联组装单">

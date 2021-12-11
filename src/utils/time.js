@@ -3,6 +3,7 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import duration from 'dayjs/plugin/duration'
+import isBetween from 'dayjs/plugin/isBetween'
 import 'dayjs/locale/zh-cn'
 import { isNil } from 'lodash'
 
@@ -11,6 +12,7 @@ dayjs.extend(customParseFormat)
 dayjs.extend(relativeTime)
 dayjs.extend(duration)
 dayjs.extend(weekOfYear)
+dayjs.extend(isBetween)
 
 export function formatTime(dateStr, format = 'YYYY-MM-DD') {
   // console.log('🚀 > file: index.js:752 > formatTimeDayjs > args:', args)
