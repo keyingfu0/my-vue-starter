@@ -516,11 +516,11 @@ const StoreUniformityCheck = {
     },
     {
       field: 'fbalanceCount',
-      title: '期初结余',
+      title: '当前库存',
     },
     {
-      field: '期初结余-毛需求',
-      title: '期初结余-毛需求',
+      field: '当前库存-毛需求',
+      title: '当前库存-毛需求',
       sortable: true,
       sortType: 'number',
       formatter: ({ row }) => {
