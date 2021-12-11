@@ -1142,11 +1142,11 @@ function disabledDateMethod(params) {
       >
         <template #buttons-left="{ selectedRows }">
           <a-button @click="showModal">excel导入</a-button>
-          <a-divider type="vertical" />
+          <a-divider v-show="activeKey !== '0'" class="separator" type="vertical" />
           <a-button v-show="activeKey !== '0'" @click="handleStoreUniformityCheck">仓库齐套性检测</a-button>
-          <a-button v-show="activeKey !== '0'" @click="generateAssemblyOrder">生成组装单</a-button>
           <a-button v-show="activeKey !== '0'" @click="handleStoreAtpCheck">ATP齐套性检测</a-button>
-
+          <a-button v-show="activeKey !== '0'" @click="generateAssemblyOrder">生成组装单</a-button>
+          <a-divider v-show="activeKey !== '0'" class="separator" type="vertical" />
           <a-popconfirm
             :visible="isCaseCloseConfirmVisible"
             cancel-text="取消"
@@ -1157,7 +1157,7 @@ function disabledDateMethod(params) {
           >
             <a-button v-show="activeKey !== '0'">结案</a-button>
           </a-popconfirm>
-
+          <a-divider v-show="selectedRows.length > 0" class="separator" type="vertical" />
           <a-popover v-model:visible="editAssemblyTimeBatchVisible" placement="bottom" trigger="click">
             <template #content>
               <vxe-input
@@ -1270,6 +1270,7 @@ function disabledDateMethod(params) {
                 @click="button.handler"
                 >{{ button.text }}
               </a-button>
+              <a-divider class="separator" type="vertical" />
               <a-popconfirm
                 :visible="isWorkOrderReleaseConfirmVisible"
                 cancel-text="取消"

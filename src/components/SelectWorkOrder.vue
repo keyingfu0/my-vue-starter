@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onMounted, reactive, ref, shallowRef, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, shallowRef, watch } from 'vue'
 import { debounce, keyBy, uniqBy } from 'lodash'
 import request from '@/utils/request'
 import useRequest, { useList } from '@/utils/useRequest'
@@ -131,13 +131,49 @@ onMounted(() => {
   emit('update:visible', true)
 })
 
+//#region ## 处理编辑模式下取消编辑的问题 ==================================================
 function handleMousedown(e) {
-  // console.log('-> e.target.tag', e.target)
+  const { target } = e
+  // 模拟点击
+  if (target.className === 'ant-checkbox-input') {
+    // console.log('target:', target)
+    target.click()
+    return
+  }
+
+  // 下拉菜单的不传播
+  const el = target.closest('.ant-dropdown')
+  if (el) {
+    e.stopPropagation()
+  }
+  // const el =
+  // console.log('-> target.tag', e.target)
   // if (e.target.tagName === 'BUTTON' || e.target.parentNode.tagName === 'BUTTON') {
   //   return
   // }
+  // e.stopPropagation()
+}
+
+function stopPropagation(e) {
   e.stopPropagation()
 }
+
+// NOTE 处理点击浮动窗口下拉菜单会取消编辑的问题
+watch(
+  () => props.visible,
+  (newVal) => {
+    if (newVal) {
+      document.body.addEventListener('mousedown', handleMousedown)
+    } else {
+      document.body.removeEventListener('mousedown', handleMousedown)
+    }
+  },
+)
+onUnmounted(() => {
+  document.body.removeEventListener('mousedown', handleMousedown)
+})
+
+//#endregion
 
 const filterOption = (inputValue, option) => {
   return option.key.indexOf(inputValue) > -1
@@ -205,7 +241,7 @@ function handleConfirm() {
 
   <a-popover :visible="visible" placement="left" trigger="click">
     <template #content>
-      <div class="" @mousedown="handleMousedown">
+      <div class="" @mousedown="stopPropagation">
         <a-transfer
           v-model:target-keys="targetKeys"
           :data-source="options"
