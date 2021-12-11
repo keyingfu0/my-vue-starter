@@ -71,7 +71,7 @@ const DownloadLink = {
     </div>`,
   setup() {
     function handleDownload() {
-      next()
+      // next()
       // saveAs('http://47.98.59.211:6247/Content/template/ProductionOrderTemplate.xls', '订单模板.xls')
     }
 
