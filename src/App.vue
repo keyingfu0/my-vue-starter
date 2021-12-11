@@ -285,7 +285,7 @@ const materialTable = {
       formatter: ({ cellValue }) => {
         // TODO 可以优化
         const day = time(cellValue)
-        const day2 = day.add('7', 'day')
+        const day2 = day.add('6', 'day')
         const week = day.week()
         return `${day.year()}年第${week}周（${day.format('MM月DD日')}~${day2.format('MM月DD日')}）`
       },
