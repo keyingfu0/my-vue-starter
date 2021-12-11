@@ -2,7 +2,7 @@
 // noinspection ES6UnusedImports
 import { computed, h, nextTick, reactive, ref, resolveComponent, shallowRef, watch } from 'vue'
 // import { Button as AButton, Tabs as Atab, TabPane } from 'ant-design-vue'
-import { EditOutlined, ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons-vue'
+import { EditOutlined, ExclamationCircleOutlined, DeleteOutlined, QuestionCircleOutlined } from '@ant-design/icons-vue'
 
 import BaseTable from '@/components/BaseTable.vue'
 import ModalImport from '@/components/ModalImport.vue'
@@ -1160,9 +1160,19 @@ function disabledDateMethod(params) {
         <template #buttons-left="{ selectedRows }">
           <a-button @click="showModal">excel导入</a-button>
           <a-divider v-show="activeKey !== '0'" class="separator" type="vertical" />
-          <a-button v-show="activeKey !== '0'" @click="handleStoreUniformityCheck">仓库齐套性检测</a-button>
+          <a-tooltip placement="topLeft" title="仅在本周时可用">
+            <a-button v-show="activeKey !== '0'" :disabled="activeKey !== '1'" @click="handleStoreUniformityCheck">
+              <question-circle-outlined v-show="activeKey !== '1'" class="-translate-y-0.5" />
+              仓库齐套性检测
+            </a-button>
+          </a-tooltip>
           <a-button v-show="activeKey !== '0'" @click="handleStoreAtpCheck">ATP齐套性检测</a-button>
-          <a-button v-show="activeKey !== '0'" @click="generateAssemblyOrder">生成组装单</a-button>
+          <a-tooltip placement="topLeft" title="仅在本周时可用">
+            <a-button v-show="activeKey !== '0'" :disabled="activeKey !== '1'" @click="generateAssemblyOrder">
+              <question-circle-outlined v-show="activeKey !== '1'" class="-translate-y-0.5" />
+              生成组装单
+            </a-button>
+          </a-tooltip>
           <a-divider v-show="activeKey !== '0'" class="separator" type="vertical" />
           <a-popconfirm
             :visible="isCaseCloseConfirmVisible"
