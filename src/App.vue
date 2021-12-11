@@ -747,6 +747,8 @@ const visibleAssemblyOrderModal = ref(false)
 const assemblyOrder = ref()
 const assemblyOrder2 = ref()
 let currentRow
+const printCount = ref(0)
+const printCountOffset = ref(0)
 
 // 简易缓存
 // TODO NOTE  这里做了一个2秒钟的建议缓存, 原因是因为2个列表请求的是同一接口并同时返回了2个列表的数据, 但table设计时是table内部直接请求的, 为了防止2个table内部重复请求, 在请求时检查一下之前请求缓存, 以后看看有没有更好的方式(直接在外部改data,loading的数据?)
@@ -791,6 +793,7 @@ async function showAssociatedAssemblyOrder(row) {
 // TODO 加一个tab, 筛选功能
 
 async function assemblyOrderReq(row) {
+  printCountOffset.value = 0
   console.log('-> Fanny row', row)
 
   console.log('-> cacheResult', cacheResult)
@@ -860,11 +863,15 @@ const assemblyOrderTable = {
       //   console.log('-> currentRow?.cRelateNo', currentRow?.cRelateNo)
       //   return currentRow?.cRelateNo ?? '_undefined'
       // },
+      onSuccess(res) {
+        printCount.value = res.fPrintCount
+      },
       setup() {
         onFormatResultPipe((data) => {
           console.log('-> data', data)
           return {
             List: data.MaterialRequestList,
+            fPrintCount: data.fPrintCount,
           }
         })
       },
@@ -961,6 +968,7 @@ async function print() {
       cApsAssembleOrderNo: currentRow.cRelateNo,
     },
   })
+  printCountOffset.value++
 }
 
 //#endregion
@@ -1418,7 +1426,7 @@ function disabledDateMethod(params) {
       <div class="w-full">
         <div class="">
           <a-button type="primary" @click="print">打印组装单</a-button>
-          <span class="ml-2">打印次数：1</span>
+          <span class="ml-2">打印次数：{{ printCount + printCountOffset }}</span>
         </div>
         <div ref="assemblyOrderLists">
           <h2 class="font-bold text-2xl mt-4 text-center">订单列表</h2>
