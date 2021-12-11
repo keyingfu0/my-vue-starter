@@ -313,6 +313,7 @@ const materialTable = {
     {
       field: 'fATPCount',
       title: 'ATP',
+      titleHelp: { message: '可承诺量(available to promise，ATP)是库存量和主生产计划量中尚未承诺给客户订单的部分，用于支持客户订单承诺。' },
       // return 'text-red-300' class when cellValue < 0
       className: ({ row }) => {
         return row.fATPCount < 0 ? 'text-red-500' : ''
