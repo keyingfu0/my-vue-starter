@@ -1,5 +1,5 @@
 <script setup>
-import { computed, h, inject, nextTick, reactive, ref, resolveComponent, shallowRef, watch } from 'vue'
+import { computed, h, inject, nextTick, onMounted, reactive, ref, resolveComponent, shallowRef, watch } from 'vue'
 import message from 'ant-design-vue/es/message'
 import 'ant-design-vue/es/message/style/index.css'
 import useRequest, { useList } from '@/utils/useRequest'
@@ -211,9 +211,12 @@ const tableMaxHeight = ref(props.maxHeight)
 
 // TODO 更好的实现方式
 function handleZoom(el, options = {}) {
+  // TODO offset可以通过第一次计算 height - table.value.$el.offsetHeight 获取
   const { offset = 90 } = options
-  const $body = el.querySelector('.vxe-modal--content')
-  const height = $body.offsetHeight
+  const $container = el.querySelector('.vxe-modal--content')
+  const height = $container.offsetHeight
+  // const offset = height - table.value.$el.offsetHeight
+  console.log('-> offset', offset)
   console.log('-> height', height)
   const res = height - offset
   if (res > 0) {
@@ -311,8 +314,8 @@ defineExpose({
     @checkbox-change="handleCheckboxChange"
     @checkbox-all="handleCheckboxChange"
   >
-    <vxe-column v-if="hasCheckbox" type="checkbox" width="60"></vxe-column>
-    <vxe-column type="seq" width="60"></vxe-column>
+    <vxe-column v-if="hasCheckbox" align="center" type="checkbox" width="60"></vxe-column>
+    <vxe-column align="right" type="seq" width="60"></vxe-column>
     <component :is="columns"></component>
     <slot name="default"></slot>
     <slot name="empty"></slot>
@@ -366,5 +369,10 @@ defineExpose({
 .vxe-table--body-wrapper {
   @apply overscroll-y-contain;
   /*overscroll-y:*/
+}
+
+/* 给正在编辑的单元格添加蓝色边框 */
+.vxe-body--column.col--edit.col--actived {
+  @apply border-2 border-blue-200 !important;
 }
 </style>

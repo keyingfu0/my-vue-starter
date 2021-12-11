@@ -23,7 +23,7 @@ const emit = defineEmits(['change', 'update:visible', 'update:row'])
 let lastFetchId = 0
 const state = reactive({
   value: [],
-  fetching: false,
+  fetching: true,
 })
 
 const options = shallowRef([])
@@ -108,7 +108,6 @@ watch(
   () => props.row.OrderList,
   () => {
     options.value = []
-    state.fetching = false
   },
 )
 

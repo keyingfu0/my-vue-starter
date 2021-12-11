@@ -4,6 +4,7 @@ const defaultTheme = require('tailwindcss/defaultTheme')
 module.exports = {
   mode: 'jit',
   purge: ['./src/**/*.html', './src/**/*.vue', './src/**/*.jsx'],
+  safelist: ['bg-blue-400'],
   important: true,
   theme: {
     extend: {

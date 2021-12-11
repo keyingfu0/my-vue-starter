@@ -36,5 +36,15 @@ export default function useTableEdit(saveService, { tableRef }) {
     hasEdit.value = false
   }
 
-  return { hasEdit, handleCellChange, saveTable, resetTable, refreshed }
+  // 表格编辑状态样式变化
+  function editClassName({ row }) {
+    if (row._hasEdit) {
+      return 'bg-blue-200'
+    }
+    // if (row._isEditing) {
+    //   return 'border border-blue-200'
+    // }
+  }
+
+  return { hasEdit, handleCellChange, saveTable, resetTable, refreshed, editClassName }
 }
