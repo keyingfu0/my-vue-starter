@@ -192,7 +192,8 @@ async function handleFinish() {
       </div>
     </div>
     <template #footer>
-      <div class="steps-action">
+      <a-divider></a-divider>
+      <div class="steps-action flex justify-end space-x-4">
         <a-button v-if="current > 0" :loading="uploading" style="margin-left: 8px" @click="prev">上一步</a-button>
         <a-button v-if="current < steps.length - 1" type="primary" v-bind="nextButtonState[current]" @click="next">下一步 </a-button>
         <a-button v-if="current === steps.length - 1" :loading="uploading" type="primary" @click="handleFinish"> 完成 </a-button>

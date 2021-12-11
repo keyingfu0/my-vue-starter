@@ -180,9 +180,12 @@ const handleZoom = debounce(_handleZoom, 500)
       </div>
     </template>
     <slot></slot>
-    <template #footer>
-      <slot name="footer"></slot>
-    </template>
+
+    <slot name="footer"></slot>
+<!--    ? 看文档是有的,为什么实际上没有?-->
+    <!--    <template #footer>-->
+    <!--      <slot name="footer"></slot>-->
+    <!--    </template>-->
   </vxe-modal>
 </template>
 
