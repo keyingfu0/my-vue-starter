@@ -261,8 +261,8 @@ defineExpose({
   handleDelete,
   getTableDataLength,
   fetchData: run,
-  print(args) {
-    table.value.print(args)
+  async print(args) {
+    return table.value.print(args)
   },
   clearActived: async () => {
     return table.value.clearActived()
