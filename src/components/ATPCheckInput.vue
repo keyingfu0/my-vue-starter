@@ -1,8 +1,7 @@
 <script setup>
-import { Input, Space, Form, Button, InputNumber } from 'ant-design-vue'
+import { Input, Form, InputNumber, Grid } from 'ant-design-vue'
 import { createForm } from '@formily/core'
 import { FormProvider, ArrayField, Field, mapProps, connect } from '@formily/vue'
-import 'ant-design-vue/dist/antd.css'
 
 defineProps({
   loading: {

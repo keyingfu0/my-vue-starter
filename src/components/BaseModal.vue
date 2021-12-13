@@ -125,7 +125,6 @@ const handleZoom = debounce(_handleZoom, 500)
   <vxe-modal
     id="test"
     ref="modalRef"
-    :mask="false"
     :model-value="visible"
     :position="position"
     :width="widthValue"
