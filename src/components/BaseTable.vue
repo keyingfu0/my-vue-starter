@@ -122,6 +122,20 @@ if (props.reloading !== undefined) {
 // useRequest(()=>{
 //   return
 // })
+const tableData = shallowRef([])
+watch(
+  data,
+  (newVal) => {
+    if (newVal) {
+      tableData.value = newVal.List
+    } else {
+      tableData.value = []
+    }
+  },
+  {
+    immediate: true,
+  },
+)
 console.log('-> tableData', data)
 
 // 当表格数据不新鲜时刷新表格数据
@@ -197,7 +211,7 @@ async function refreshTableData() {
 
 //#region ## 获取数据长度 ==================================================
 function getTableDataLength() {
-  return data.value.length
+  return tableData.value.length
 }
 
 //#endregion
@@ -303,7 +317,7 @@ defineExpose({
     :checkbox-config="{ range: true, highlight: true }"
     :column-config="{ resizable: true }"
     :custom-config="{ storage: true }"
-    :data="data.List"
+    :data="tableData"
     :loading="loading"
     :max-height="tableMaxHeight"
     :print-config="{}"

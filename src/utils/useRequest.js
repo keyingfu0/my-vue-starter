@@ -8,6 +8,8 @@
 import { usePagination, useRequest as _useRequest } from 'vue-request'
 import { forEach, isNil, isArray, isFunction, isObject } from 'lodash'
 import { juxt, pipe } from 'ramda'
+import message from 'ant-design-vue/es/message'
+import 'ant-design-vue/es/message/style/index.css'
 import { ElMessage } from 'element-plus'
 
 //#region ## 实现类似 vue3 组合式api 的注册钩子的能力 ==================================================
@@ -130,10 +132,7 @@ const presets = {
     onSuccess(() => {
       const { successMessage } = options
       if (successMessage) {
-        ElMessage.success({
-          message: `${successMessage}`,
-          type: 'success',
-        })
+        message.success(successMessage)
       }
     })
   },

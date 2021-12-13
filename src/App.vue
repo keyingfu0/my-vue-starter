@@ -33,6 +33,7 @@ import SelectWorkOrder from '@/components/SelectWorkOrder.vue'
 import useTableEdit from '@/composables/useTableEdit'
 import { saveAs } from 'file-saver'
 import BaseModal from '@/components/BaseModal.vue'
+import ATPCheckInput from '@/components/ATPCheckInput.vue'
 
 //#region ## define ==================================================
 const salesOrderTableRef = ref()
@@ -517,8 +518,8 @@ const StoreUniformityCheck = {
       align: 'right',
     },
     {
-      field: '当前库存-毛需求',
-      title: '当前库存-毛需求',
+      field: '当前库存 - 毛需求',
+      title: '当前库存 - 毛需求',
       sortable: true,
       sortType: 'number',
       align: 'right',
@@ -526,6 +527,15 @@ const StoreUniformityCheck = {
         return row.fbalanceCount - row.fGrossCount
       },
     },
+    // {
+    //   field: 'OrderList',
+    //   title: '关联工单',
+    //   width: 270,
+    //   showOverflow: false,
+    //   slots: {
+    //     default: workOrderComponent,
+    //   },
+    // },
   ],
   requestConfig: [
     async (args = {}) => {
@@ -559,7 +569,7 @@ async function handleStoreAtpCheck() {
 }
 
 const rowClassNameAtp = ({ row }) => {
-  if (row.fATPCount < 0) {
+  if (row.fATPCount - row.fGrossCount < 0) {
     return 'bg-red-200'
   }
 }
@@ -582,21 +592,21 @@ const storeAtpCheckTable = {
       align: 'right',
     },
     {
-      field: 'fbalanceCount',
-      title: '期初结余',
-      align: 'right',
-    },
-    {
-      field: 'fProduceCount',
-      title: '本周在制量',
-      align: 'right',
-    },
-    {
       field: 'fATPCount',
       title: 'ATP',
       align: 'right',
       sortable: true,
       sortType: 'number',
+    },
+    {
+      field: 'ATP - 毛需求',
+      title: 'ATP - 毛需求',
+      align: 'right',
+      sortable: true,
+      sortType: 'number',
+      formatter: ({ row }) => {
+        return row.fATPCount - row.fGrossCount
+      },
     },
     // {
     //   field: '毛需求-期初结余',
@@ -608,27 +618,28 @@ const storeAtpCheckTable = {
     //   },
     // },
   ],
+  customPreset: ['initial-empty-list', 'is-list'],
   requestConfig: [
-    async (args = {}) => {
+    async (params = {}) => {
       const cBomNos = bomNos.value.join(',')
       // TODO 放到表格组件内部
       return request('/ApsSalesOrderInfo/HomogeneityCheck_ATP', {
         method: 'POST',
         data: {
-          cBomNos,
           ...activeWeek.value,
-          ...args,
+          ...params,
         },
       })
     },
     {
       manual: true,
+      successMessage: '查询成功!',
     },
   ],
 }
 
-function handleStoreAtpCheckSearch() {
-  storeAtpCheck.value.fetchData()
+function handleStoreAtpCheckSearch(formValues) {
+  storeAtpCheck.value.fetchData(formValues)
 }
 
 //#endregion
@@ -1314,7 +1325,7 @@ function disabledDateMethod(params) {
             </div>
           </vxe-column>
 
-          <vxe-column v-slot="{ row }" align="center" field="fIsCalculate" title="状态" width="100">
+          <vxe-column v-slot="{ row }" align="center" field="fStatus" title="状态" width="100">
             <a-tag v-if="row.fStatus === 0" color="processing">未结案</a-tag>
             <a-tag v-if="row.fStatus === 4" class="text-gray-400" color="default">已结案</a-tag>
           </vxe-column>
@@ -1402,14 +1413,8 @@ function disabledDateMethod(params) {
     <!--    ATP齐套性检测 -->
     <BaseModal v-model:visible="visibleCheckAtpModal" title="ATP齐套性检测">
       <div class="w-full">
-        <a-alert class="mb-4" banner message="请输入一个或多个BOM编码进行查询（按回车添加）" show-icon type="info" />
-        <div class="flex">
-          <a-select v-model:value="bomNos" :options="[]" mode="tags" placeholder="请输入BOM编码" style="width: 70%"></a-select>
-          <div class="ml-4">
-            <!--             loading状态处理?-->
-            <a-button :disabled="bomNos.length < 1" :loading="storeAtpCheckReloading" type="primary" @click="handleStoreAtpCheckSearch">查询 </a-button>
-          </div>
-        </div>
+        <a-alert class="mb-4" banner message="请输入一个或多个BOM编码及其数量进行查询" show-icon type="info" />
+        <a-t-p-check-input :loading="storeAtpCheckReloading" @submit="handleStoreAtpCheckSearch"></a-t-p-check-input>
         <BaseTable
           id="storeAtpCheck"
           ref="storeAtpCheck"

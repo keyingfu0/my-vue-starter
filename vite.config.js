@@ -1,12 +1,12 @@
-import {defineConfig} from 'vite'
+import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 // import ElementPlus from 'unplugin-element-plus/vite'
-import {resolve} from 'path'
+import { resolve } from 'path'
 import styleImport from 'vite-plugin-style-import'
 import babel from '@rollup/plugin-babel'
 import Components from 'unplugin-vue-components/vite'
-import {AntDesignVueResolver} from 'unplugin-vue-components/resolvers'
-import {visualizer} from 'rollup-plugin-visualizer'
+import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
+import { visualizer } from 'rollup-plugin-visualizer'
 import nodeResolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import vitePluginImp from 'vite-plugin-imp'
@@ -17,7 +17,7 @@ export default defineConfig({
       less: {
         javascriptEnabled: true,
       },
-      scss: {charset: false},
+      scss: { charset: false },
     },
   },
   build: {
@@ -30,7 +30,6 @@ export default defineConfig({
         drop_debugger: true,
       },
     },
-
   },
   plugins: [
     vue(),
@@ -97,19 +96,16 @@ export default defineConfig({
           camel2DashComponentName: true,
           style: (name) => `vxe-table/es/${name}/style.css`,
         },
-        // {
-        //   libName: 'ant-design-vue',
-        //   style(name) {
-        //     if (/popconfirm/.test(name)) {
-        //       // support multiple style file path to import
-        //       return [
-        //         'ant-design-vue/es/button/style/index.css',
-        //         'ant-design-vue/es/popover/style/index.css'
-        //       ]
-        //     }
-        //     return `ant-design-vue/es/${name}/style/index.css`
-        //   }
-        // },
+        {
+          libName: 'ant-design-vue',
+          style(name) {
+            if (/popconfirm/.test(name)) {
+              // support multiple style file path to import
+              return ['ant-design-vue/es/button/style/index.css', 'ant-design-vue/es/popover/style/index.css']
+            }
+            return `ant-design-vue/es/${name}/style/index.css`
+          },
+        },
       ],
     }),
     // styleImport({
