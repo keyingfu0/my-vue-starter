@@ -25,7 +25,7 @@ import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import request from '@/utils/request'
 import useRequest, { onFormatResultPipe } from '@/utils/useRequest'
 import { formatTime } from '@/utils/time'
-import { flatten, forEach, map, throttle } from 'lodash'
+import { flatten, forEach, map, tail, throttle } from 'lodash'
 
 import { time } from '@/utils/time.js'
 
@@ -45,6 +45,8 @@ const materialTableEdit = useTableEdit(associatedWorkOrder, {
 
 //#region ## 请求的时间参数 ==================================================
 const activeKey = ref('0')
+// 最大周数
+const MAX_WEEKS = 5
 
 const now = shallowRef(time())
 
@@ -61,15 +63,17 @@ const weeks = computed(() => {
   const end = now.value.endOf('week')
   const currentWeek = {
     start: start.format('YYYY-MM-DD HH:mm:ss'),
-    // startObj: start,
+    // startStr: start.format('YYYY年MM月DD日'),
     end: end.format('YYYY-MM-DD HH:mm:ss'),
-    // endObj: end,
+    // endStr: end.format('YYYY年MM月DD日'),
   }
 
-  const nextWeeks = [1, 2].map((num) => {
+  const nextWeeks = tail([...new Array(MAX_WEEKS).keys()]).map((num) => {
     return {
       start: start.add(num, 'week').format('YYYY-MM-DD HH:mm:ss'),
+      // startStr: start.format('YYYY年MM月DD日'),
       end: end.add(num, 'week').format('YYYY-MM-DD HH:mm:ss'),
+      // endStr: end.format('YYYY年MM月DD日'),
     }
   })
   //  [{start:,end:},{start: ,end:},{}]
@@ -94,7 +98,7 @@ function getDatesBetween(start, end) {
 
 const validDates = computed(() => {
   const { start } = weeks.value[0]
-  const { end } = weeks.value[2]
+  const { end } = weeks.value[MAX_WEEKS - 1]
   const dates = getDatesBetween(time(start), time(end))
   return dates.map((date) => date.toString().slice(0, 16))
 
@@ -103,7 +107,7 @@ const validDates = computed(() => {
 
 const validDate = computed(() => {
   const { start } = weeks.value[0]
-  const { end } = weeks.value[2]
+  const { end } = weeks.value[MAX_WEEKS - 1]
   return {
     min: time(start).toDate(),
     max: time(end).toDate(),
@@ -1189,8 +1193,10 @@ function disabledDateMethod(params) {
         <a-tabs v-model:activeKey="activeKey">
           <a-tab-pane key="0" tab="未排产"></a-tab-pane>
           <a-tab-pane key="1" tab="本周"></a-tab-pane>
-          <a-tab-pane key="2" force-render tab="下周"></a-tab-pane>
-          <a-tab-pane key="3" tab="下下周"></a-tab-pane>
+          <a-tab-pane key="2" tab="第二周"></a-tab-pane>
+          <a-tab-pane key="3" tab="第三周"></a-tab-pane>
+          <a-tab-pane key="4" tab="第四周"></a-tab-pane>
+          <a-tab-pane key="5" tab="第五周"></a-tab-pane>
         </a-tabs>
       </div>
       <h2 class="font-bold text-lg">期计划系统</h2>
