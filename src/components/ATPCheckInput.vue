@@ -82,7 +82,7 @@ function handleSubmit() {
                 ]"
                 :name="`${index}.cBomNo`"
                 required
-                title="物料BOM编码"
+                title="订单BOM编码"
               />
               <!--                required-->
               <Field

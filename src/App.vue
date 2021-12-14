@@ -276,7 +276,7 @@ const materialTable = {
     {
       field: 'cWeekNo',
       title: '周次编码',
-      width: 266,
+      width: 125,
       align: 'center',
       formatter: ({ cellValue }) => {
         // TODO 可以优化
@@ -293,26 +293,31 @@ const materialTable = {
     {
       field: 'cProductNo',
       title: '零部件编号',
+      width: 145,
     },
     {
       field: 'fGrossCount',
       title: '毛需求',
       align: 'right',
+      width: 115,
     },
     {
       field: 'fbalanceCount',
       title: '期初结余',
       align: 'right',
+      width: 115,
     },
     {
       field: 'fProduceCount',
       title: '本周在制量',
       align: 'right',
+      width: 115,
     },
     {
       field: 'fATPCount',
       title: 'ATP',
       align: 'right',
+      width: 115,
       titleHelp: { message: '可承诺量(available to promise，ATP)是库存量和主生产计划量中尚未承诺给客户订单的部分，用于支持客户订单承诺。' },
       // return 'text-red-300' class when cellValue < 0
       className: ({ row }) => {
@@ -322,7 +327,7 @@ const materialTable = {
     {
       field: 'OrderList',
       title: '关联工单',
-      width: 270,
+      width: 274,
       showOverflow: false,
       className: materialTableEdit.editClassName,
       editRender: {
@@ -1264,14 +1269,9 @@ function disabledDateMethod(params) {
           <vxe-column field="cSalesOrderNo" show-overflow="tooltip" title="订单编号"></vxe-column>
           <vxe-column field="cBomNo" show-overflow="tooltip" title="订单BOM编号"></vxe-column>
           <vxe-column field="cProductNo" show-overflow="tooltip" title="物料编号"></vxe-column>
-          <vxe-column
-            field="cProductName"
-            show-overflow="tooltip"
-            title="物料名称
-"
-          ></vxe-column>
-          <vxe-column field="cCustomerName" show-overflow="tooltip" title="客户名"></vxe-column>
-          <vxe-column align="right" field="fCount" show-overflow="tooltip" title="数量"></vxe-column>
+          <vxe-column field="cProductName" show-overflow="tooltip" title="物料名称"></vxe-column>
+          <vxe-column field="cCustomerName" show-overflow="tooltip" title="客户名" width="90"></vxe-column>
+          <vxe-column align="right" field="fCount" show-overflow="tooltip" title="数量" width="100"></vxe-column>
           <!--        :edit-render="{ name: 'ADatePicker' }"-->
           <!--           TODO 无效因为有default slot-->
           <vxe-column
@@ -1281,6 +1281,7 @@ function disabledDateMethod(params) {
             field="tProduceBeginDate"
             show-overflow="tooltip"
             title="组装开始时间"
+            width="139"
           >
             <template #default="{ row }">
               <template v-if="row.tProduceBeginDate">
@@ -1309,7 +1310,7 @@ function disabledDateMethod(params) {
               ></vxe-input>
             </template>
           </vxe-column>
-          <vxe-column v-slot="{ row }" field="cRelateNo" show-overflow="tooltip" title="关联组装单" width="210">
+          <vxe-column v-slot="{ row }" field="cRelateNo" show-overflow="tooltip" title="关联组装单" width="186">
             <div class="group">
               <a-button type="link" @click="showAssociatedAssemblyOrder(row)">{{ row.cRelateNo }}</a-button>
 
@@ -1325,13 +1326,13 @@ function disabledDateMethod(params) {
             </div>
           </vxe-column>
 
-          <vxe-column v-slot="{ row }" align="center" field="fStatus" title="状态" width="100">
+          <vxe-column v-slot="{ row }" align="center" field="fStatus" title="状态" width="82">
             <a-tag v-if="row.fStatus === 0" color="processing">未结案</a-tag>
             <a-tag v-if="row.fStatus === 4" class="text-gray-400" color="default">已结案</a-tag>
           </vxe-column>
 
           <!--          <vxe-column field="fStatus" show-overflow="tooltip" title="是否结案"></vxe-column>-->
-          <vxe-column v-slot="{ row }" align="center" show-overflow="tooltip" title="操作">
+          <vxe-column v-slot="{ row }" align="center" show-overflow="tooltip" title="操作" width="60">
             <a-popconfirm cancel-text="取消" ok-text="确认" title="确认删除?" @confirm="handleDelete(row)">
               <a-button danger type="text"> 删除</a-button>
             </a-popconfirm>
