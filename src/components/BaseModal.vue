@@ -38,7 +38,7 @@ const position = computed(() => {
   return {
     left: (documentWidth * left.value) / 100,
     // top: Math.min(documentWidth * 0.01, 50),
-    top: documentWidth * 0.02,
+    top: Math.min(documentWidth * 0.01, 10),
   }
 })
 
