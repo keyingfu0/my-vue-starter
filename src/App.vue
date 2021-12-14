@@ -1263,6 +1263,7 @@ function disabledDateMethod(params) {
             width="50"
           >
             <check-circle-outlined v-if="row.fIsCalculate" class="text-green-400" />
+            <v-esle></v-esle>
             <minus-circle-outlined v-if="row.fStatus === 4" class="text-gray-400" />
             <!--            <span v-if="row.fStatus === 4">已结案</span>-->
           </vxe-column>
