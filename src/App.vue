@@ -566,6 +566,7 @@ const StoreUniformityCheck = {
 //#region ## ATP齐套性检测 ==================================================
 const visibleCheckAtpModal = ref(false)
 const storeAtpCheck = ref()
+const atpQueryCollapseKey = ref('1')
 const bomNos = ref([])
 const storeAtpCheckReloading = ref(false)
 
@@ -1421,8 +1422,12 @@ function disabledDateMethod(params) {
     <!--    ATP齐套性检测 -->
     <BaseModal v-model:visible="visibleCheckAtpModal" title="ATP齐套性检测">
       <div class="w-full">
-        <a-alert class="mb-4" banner message="请输入一个或多个BOM编码及其数量进行查询" show-icon type="info" />
-        <a-t-p-check-input :loading="storeAtpCheckReloading" @submit="handleStoreAtpCheckSearch"></a-t-p-check-input>
+        <a-collapse v-model:active-key="atpQueryCollapseKey" ghost>
+          <a-collapse-panel key="1" header="查询参数">
+            <a-alert class="mb-4" banner message="请输入一个或多个BOM编码及其数量进行查询" show-icon type="info" />
+            <a-t-p-check-input :loading="storeAtpCheckReloading" @submit="handleStoreAtpCheckSearch"></a-t-p-check-input>
+          </a-collapse-panel>
+        </a-collapse>
         <BaseTable
           id="storeAtpCheck"
           ref="storeAtpCheck"
