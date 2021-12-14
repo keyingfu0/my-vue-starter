@@ -39,6 +39,7 @@ let targetObjs = uniqBy(
     return {
       ...item,
       key: item.cProductionOrderNo,
+      disabled: item.fIsReleaseOrder === 1,
     }
   }),
   'key',
@@ -249,7 +250,7 @@ function handleConfirm() {
             height: '400px',
             width: '300px',
           }"
-          :titles="['未关联工单', '已关联工单']"
+          :titles="['未关联工单', '已关联工单（已下达工单无法删除）']"
           one-way
           show-search
           @change="handleChange"
@@ -259,7 +260,7 @@ function handleConfirm() {
             <div>
               {{ item.cProductionOrderNo }}
               <span>
-                {{ item.fPlanningCount ? `（${item.fPlanningCount}件）` : '' }}
+                {{ item.fPlanningCount ? `（${item.fPlanningCount}件，${item.fIsReleaseOrder ? '已下达 ' : '未下达 '}）` : '' }}
               </span>
             </div>
           </template>

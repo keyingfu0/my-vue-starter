@@ -1481,3 +1481,10 @@ function disabledDateMethod(params) {
     <div class="hidden bg-blue-200"></div>
   </a-config-provider>
 </template>
+
+<style>
+.ant-message {
+  /*  防止被modal遮挡*/
+  z-index: 2020 !important;
+}
+</style>

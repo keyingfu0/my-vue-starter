@@ -64,14 +64,19 @@ function handleSubmit() {
 </script>
 
 <template>
-  <div class="">
+  <div class="" @keydown.enter="handleSubmit">
     <FormProvider :form="form">
       <ArrayField name="List">
         <template #default="{ field }">
           <div v-for="(item, index) in field.value || []" :key="item.id" :style="{ marginBottom: '10px' }">
             <div class="flex space-x-2">
               <Field
-                :component="[Input]"
+                :component="[
+                  Input,
+                  {
+                    allowClear: true,
+                  },
+                ]"
                 :decorator="[
                   FormItem,
                   {
