@@ -293,6 +293,7 @@ const materialTable = {
     {
       field: 'cProductName',
       title: '零部件名字',
+      minWidth: 220,
     },
     {
       field: 'cProductNo',
