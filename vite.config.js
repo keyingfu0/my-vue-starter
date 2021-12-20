@@ -22,6 +22,7 @@ export default defineConfig({
   },
   build: {
     // sourcemap: true,
+    assetsDir: 'assets/vue',
     minify: 'terser',
     terserOptions: {
       compress: {
