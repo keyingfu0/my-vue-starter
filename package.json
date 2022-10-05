@@ -37,7 +37,7 @@
     "autoprefixer": "^10.3.4",
     "conventional-changelog-cli": "^2.1.1",
     "conventional-changelog-zkc-config": "^1.0.2",
-    "eslint-plugin-vue": "^7.17.0",
+    "eslint-plugin-vue": "^9.6.0",
     "f2elint": "^1.2.0",
     "standard-version": "^9.3.1",
     "tailwindcss": "^2.2.12",
